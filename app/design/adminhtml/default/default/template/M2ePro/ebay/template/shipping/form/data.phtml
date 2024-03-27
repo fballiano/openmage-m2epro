@@ -68,7 +68,7 @@ $missingAttributes = $this->getMissingAttributes();
         After an eBay token is obtained, <strong>Save</strong> the changes to Account configuration.<br><br>
         The Rate Tables will be downloaded to M2E Pro Shipping Policy automatically. Select one which should be applied to your Items.<br><br>
         <strong>Note</strong>, you need to repeat the procedure above for each eBay Account separately.',
-            Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'x/X3NPAg')
+            Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'ebay-guaranteed-delivery')
         ),
         'You are submitting different Shipping Rate Table modes for the domestic and international shipping. It contradicts eBay requirements. Please edit the settings.' => Mage::helper('M2ePro')->__(
             'You are submitting different Shipping Rate Table modes for the domestic and international shipping. It contradicts eBay requirements. Please edit the settings.'
@@ -530,7 +530,7 @@ $missingAttributes = $this->getMissingAttributes();
 
                 <?php if ($this->getAccountId() !== null): ?>
 
-                        <?php $isSellApiEnabled = (bool)$this->getAccount()->getChildObject()->getSellApiTokenSession(); ?>
+                        <?php $isTokenExist = $this->getAccount()->getChildObject()->isTokenExist(); ?>
 
                         <tr id="local_shipping_rate_table_mode_tr" class="local-shipping-tr">
                             <td class="label">
@@ -565,7 +565,7 @@ $missingAttributes = $this->getMissingAttributes();
                                         elementId: "local_shipping_rate_table_value_<?php echo $this->getAccountId();?>",
                                         value: <?php echo json_encode($formData['local_shipping_rate_table'][$this->getAccountId()]['value']); ?>,
                                         type: "local"
-                                })'><?php echo Mage::helper('M2ePro')->__($isSellApiEnabled ? 'Refresh Rate Tables' : 'Download Rate Tables'); ?></a>
+                                })'><?php echo Mage::helper('M2ePro')->__($isTokenExist ? 'Refresh Rate Tables' : 'Download Rate Tables'); ?></a>
                             </td>
                         </tr>
 
@@ -588,7 +588,7 @@ $missingAttributes = $this->getMissingAttributes();
                     <?php if ($this->getAccounts()->getSize()): ?>
                         <?php foreach ($this->getAccounts() as $account) : ?>
 
-                            <?php $isSellApiEnabled = (bool)$account->getChildObject()->getSellApiTokenSession();?>
+                            <?php $isTokenExist = $account->getChildObject()->isTokenExist();?>
 
                             <tr class="local-shipping-rate-table-account-tr">
                                 <td class="label">
@@ -625,7 +625,7 @@ $missingAttributes = $this->getMissingAttributes();
                                         elementId: "local_shipping_rate_table_value_<?php echo $account->getId();?>",
                                         value: <?php echo json_encode($formData['local_shipping_rate_table'][$account->getId()]['value']); ?>,
                                         type: "local"
-                                    })'><?php echo Mage::helper('M2ePro')->__($isSellApiEnabled ? 'Refresh Rate Tables' : 'Download Rate Tables'); ?></a>
+                                    })'><?php echo Mage::helper('M2ePro')->__($isTokenExist ? 'Refresh Rate Tables' : 'Download Rate Tables'); ?></a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -870,26 +870,6 @@ $missingAttributes = $this->getMissingAttributes();
                     </td>
                 </tr>
 
-                <?php if ($this->canDisplayCashOnDeliveryCost()): ?>
-                    <tr id="cash_on_delivery_cost_cv_tr" class="cash-on-delivery-tr" style="display: none;">
-                        <td class="label">
-                            <label for="cash_on_delivery_cost"><?php echo Mage::helper('M2ePro')->__('"Cash On Delivery" Cost'); ?>:</label>
-                        </td>
-                        <td class="value" style="width: auto;">
-                            <input
-                                id="cash_on_delivery_cost"
-                                name="shipping[cash_on_delivery_cost]"
-                                type="text"
-                                value="<?php echo $this->escapeHtml($formData['cash_on_delivery_cost']); ?>"
-                                class="input-text M2ePro-validation-float"
-                            />
-                            <p class="note">
-                                <span><?php echo Mage::helper('M2ePro')->__('Required when using COD Payment Method.'); ?></span>
-                            </p>
-                        </td>
-                    </tr>
-                <?php endif; ?>
-
             </table>
 
         </div>
@@ -996,7 +976,7 @@ $missingAttributes = $this->getMissingAttributes();
 
                         <?php if ($this->getAccountId() !== null): ?>
 
-                            <?php $isSellApiEnabled = (bool)$this->getAccount()->getChildObject()->getSellApiTokenSession(); ?>
+                            <?php $isTokenExist = $this->getAccount()->getChildObject()->isTokenExist(); ?>
 
                             <tr id="international_shipping_rate_table_mode_tr" class="international-shipping-tr">
                                 <td class="label">
@@ -1033,7 +1013,7 @@ $missingAttributes = $this->getMissingAttributes();
                                         elementId: "international_shipping_rate_table_value_<?php echo $this->getAccountId();?>",
                                         value: <?php echo json_encode($formData['international_shipping_rate_table'][$this->getAccountId()]['value']); ?>,
                                         type: "international"
-                                    })'><?php echo Mage::helper('M2ePro')->__($isSellApiEnabled ? 'Refresh Rate Tables' : 'Download Rate Tables'); ?></a>
+                                    })'><?php echo Mage::helper('M2ePro')->__($isTokenExist ? 'Refresh Rate Tables' : 'Download Rate Tables'); ?></a>
                                 </td>
                             </tr>
 
@@ -1057,7 +1037,7 @@ $missingAttributes = $this->getMissingAttributes();
 
                                 <?php foreach ($this->getAccounts() as $account) : ?>
 
-                                    <?php $isSellApiEnabled = (bool)$account->getChildObject()->getSellApiTokenSession(); ?>
+                                    <?php $isTokenExist = (bool)$account->getChildObject()->isTokenExist(); ?>
 
                                     <tr class="international-shipping-rate-table-account-tr">
                                         <td class="label">
@@ -1094,7 +1074,7 @@ $missingAttributes = $this->getMissingAttributes();
                                                 elementId: "international_shipping_rate_table_value_<?php echo $account->getId();?>",
                                                 value: <?php echo json_encode($formData['international_shipping_rate_table'][$account->getId()]['value']); ?>,
                                                 type: "international"
-                                            })'><?php echo Mage::helper('M2ePro')->__($isSellApiEnabled ? 'Refresh Rate Tables' : 'Download Rate Tables'); ?></a>
+                                            })'><?php echo Mage::helper('M2ePro')->__($isTokenExist ? 'Refresh Rate Tables' : 'Download Rate Tables'); ?></a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

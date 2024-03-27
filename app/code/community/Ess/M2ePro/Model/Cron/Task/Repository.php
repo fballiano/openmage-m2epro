@@ -29,6 +29,10 @@ class Ess_M2ePro_Model_Cron_Task_Repository
             'component' => self::COMPONENT_GENERAL,
             'group'     => self::GROUP_SYSTEM,
         ),
+        Ess_M2ePro_Model_Cron_Task_System_FixItemTables::NICK => array(
+            'component' => self::COMPONENT_GENERAL,
+            'group'     => self::GROUP_SYSTEM,
+        ),
         Ess_M2ePro_Model_Cron_Task_System_ConnectorCommandPending_ProcessPartial::NICK => array(
             'component' => self::COMPONENT_GENERAL,
             'group'     => self::GROUP_SYSTEM,
@@ -67,7 +71,7 @@ class Ess_M2ePro_Model_Cron_Task_Repository
             'component' => self::COMPONENT_GENERAL,
             'group'     => self::GROUP_SYSTEM,
         ),
-        Ess_M2ePro_Model_Cron_Task_Magento_Product_DetectSpecialPriceEndDate::NICK => array(
+        Ess_M2ePro_Model_Cron_Task_Magento_Product_DetectSpecialPriceStartEndDate::NICK => array(
             'component' => self::COMPONENT_GENERAL,
             'group'     => self::GROUP_SYSTEM,
         ),
@@ -149,14 +153,6 @@ class Ess_M2ePro_Model_Cron_Task_Repository
             'group'     => self::GROUP_EBAY,
         ),
         Ess_M2ePro_Model_Cron_Task_Ebay_Order_Refund::NICK => array(
-            'component' => Ess_M2ePro_Helper_Component_Ebay::NICK,
-            'group'     => self::GROUP_EBAY,
-        ),
-        Ess_M2ePro_Model_Cron_Task_Ebay_PickupStore_ScheduleForUpdate::NICK => array(
-            'component' => Ess_M2ePro_Helper_Component_Ebay::NICK,
-            'group'     => self::GROUP_EBAY,
-        ),
-        Ess_M2ePro_Model_Cron_Task_Ebay_PickupStore_UpdateOnChannel::NICK => array(
             'component' => Ess_M2ePro_Helper_Component_Ebay::NICK,
             'group'     => self::GROUP_EBAY,
         ),
@@ -294,6 +290,10 @@ class Ess_M2ePro_Model_Cron_Task_Repository
             'group'     => self::GROUP_WALMART,
         ),
         Ess_M2ePro_Model_Cron_Task_Walmart_Order_Receive::NICK => array(
+            'component' => Ess_M2ePro_Helper_Component_Walmart::NICK,
+            'group'     => self::GROUP_WALMART,
+        ),
+        Ess_M2ePro_Model_Cron_Task_Walmart_Order_ReceiveWithCancellationRequested::NICK => array(
             'component' => Ess_M2ePro_Helper_Component_Walmart::NICK,
             'group'     => self::GROUP_WALMART,
         ),

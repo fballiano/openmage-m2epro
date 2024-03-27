@@ -81,7 +81,7 @@ you need to add one more account to M2E Pro under <i>Amazon Integration > Config
 Click <a href="%url%" target="_blank">here</a> to learn about the Sell on Another Marketplace feature.
 HTML
                             ,
-                            Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'x/sH2bB')
+                            Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'sell-on-another-amazon-marketplace')
                         )
                     )
                 )
@@ -161,8 +161,6 @@ HTML
 
         $sessionData['worldwide_id_mode'] = $amazonListing->getWorldwideIdMode();
         $sessionData['worldwide_id_custom_attribute'] = $amazonListing->getData('worldwide_id_custom_attribute');
-
-        $sessionData['search_by_magento_title_mode'] = $amazonListing->getSearchByMagentoTitleMode();
 
         Mage::helper('M2ePro/Data_Session')->setValue(
             Ess_M2ePro_Model_Amazon_Listing::CREATE_LISTING_SESSION_DATA,

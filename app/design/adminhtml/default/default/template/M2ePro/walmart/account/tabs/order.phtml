@@ -18,7 +18,7 @@
         You can select which tax settings should be applied to an Order, activate an automatic invoice and shipment creation, etc.<br/><br/>
 
         The detailed information can be found <a href="%url%" target="_blank">here</a>.',
-        Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'x/zeVaAg')
+        Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'walmart-integration')
     ); ?>
 </div>
 
@@ -229,6 +229,22 @@
                             <option value="1" <?php if ($formData['magento_orders_settings']['shipping_information']['ship_by_date'] == 1) echo ' selected="selected"'; ?>><?php echo Mage::helper('M2ePro')->__('Yes'); ?></option>
                             <option value="0" <?php if ($formData['magento_orders_settings']['shipping_information']['ship_by_date'] == 0) echo ' selected="selected"'; ?>><?php echo Mage::helper('M2ePro')->__('No'); ?></option>
                         </select>
+                    </td>
+                </tr>
+
+                <tr id="magento_orders_shipping_information_container">
+                    <td class="label">
+                        <label for="magento_orders_shipping_address_region_override"><?php echo Mage::helper('M2ePro')->__('Override invalid Region/State required value') ?>:</label>
+                    </td>
+                    <td class="value">
+                        <?php $regionOverride = !isset($formData['magento_orders_settings']['shipping_information']['shipping_address_region_override']) ? 1 : $formData['magento_orders_settings']['shipping_information']['shipping_address_region_override']?>
+                        <select name="magento_orders_settings[shipping_information][shipping_address_region_override]" id="magento_orders_shipping_address_region_override">
+                            <option value="0" <?php if (!$regionOverride): ?>selected="selected"<?php endif; ?>><?php echo Mage::helper('M2ePro')->__('No') ?></option>
+                            <option value="1" <?php if ($regionOverride): ?>selected="selected"<?php endif; ?>><?php echo Mage::helper('M2ePro')->__('Yes') ?></option>
+                        </select>
+                        <p class="note">
+                            When enabled, the invalid Region/State value will be replaced with an alternative one to create an order in Magento.
+                        </p>
                     </td>
                 </tr>
 
@@ -488,7 +504,7 @@
                                     Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(
                                         null,
                                         null,
-                                        'x/juJ0Aw#CalculationTaxSettings-TaxSource'
+                                        'calculation-tax-settings#494a6a512f99498583732e7c99ffcc02'
                                     )
                                 ); ?></span>
                         </p>

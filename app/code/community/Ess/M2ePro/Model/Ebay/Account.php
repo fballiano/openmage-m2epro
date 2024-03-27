@@ -82,61 +82,6 @@ class Ess_M2ePro_Model_Ebay_Account extends Ess_M2ePro_Model_Component_Child_Eba
 
     //########################################
 
-    public function deleteInstance()
-    {
-        if ($this->isLocked()) {
-            return false;
-        }
-
-        Mage::getSingleton('core/resource')->getConnection('core_write')
-            ->delete(
-                Mage::helper('M2ePro/Module_Database_Structure')
-                    ->getTableNameWithPrefix('m2epro_ebay_account_store_category'),
-                array('account_id = ?' => $this->getId())
-            );
-
-        $storeCategoryTemplates = $this->_activeRecordFactory->getObjectCollection('Ebay_Template_StoreCategory');
-        $storeCategoryTemplates->addFieldToFilter('account_id', $this->getId());
-        foreach ($storeCategoryTemplates->getItems() as $storeCategoryTemplate) {
-            /** @var Ess_M2ePro_Model_Ebay_Template_StoreCategory $storeCategoryTemplate */
-            $storeCategoryTemplate->deleteInstance();
-        }
-
-        $feedbacks = $this->_activeRecordFactory->getObjectCollection('Ebay_Feedback');
-        $feedbacks->addFieldToFilter('account_id', $this->getId());
-        foreach ($feedbacks->getItems() as $feedback) {
-            /** @var Ess_M2ePro_Model_Ebay_Feedback $feedback */
-            $feedback->deleteInstance();
-        }
-
-        $feedbackTemplates = $this->_activeRecordFactory->getObjectCollection('Ebay_Feedback_Template');
-        $feedbackTemplates->addFieldToFilter('account_id', $this->getId());
-        foreach ($feedbackTemplates->getItems() as $feedbackTemplate) {
-            /** @var Ess_M2ePro_Model_Ebay_Feedback_Template $feedbackTemplate */
-            $feedbackTemplate->deleteInstance();
-        }
-
-        $itemCollection = $this->_activeRecordFactory->getObjectCollection('Ebay_Item');
-        $itemCollection->addFieldToFilter('account_id', $this->getId());
-        foreach ($itemCollection->getItems() as $item) {
-            /** @var Ess_M2ePro_Model_Ebay_Item $item */
-            $item->deleteInstance();
-        }
-
-        $pickupCollection = $this->_activeRecordFactory->getObjectCollection('Ebay_Account_PickupStore');
-        $pickupCollection->addFieldToFilter('account_id', $this->getId());
-        foreach ($pickupCollection->getItems() as $pickupStore) {
-            /** @var Ess_M2ePro_Model_Ebay_Account_PickupStore $pickupStore */
-            $pickupStore->deleteInstance();
-        }
-
-        $this->delete();
-
-        return true;
-    }
-
-    //########################################
-
     /**
      * @return bool
      */
@@ -865,39 +810,6 @@ class Ess_M2ePro_Model_Ebay_Account extends Ess_M2ePro_Model_Component_Child_Eba
         return (int)$setting;
     }
 
-    // ---------------------------------------
-
-    public function isMagentoOrdersInStorePickupEnabled()
-    {
-        $setting = $this->getSetting('magento_orders_settings', array('in_store_pickup_statues', 'mode'), 0);
-
-        return (bool)$setting;
-    }
-
-    // ---------------------------------------
-
-    public function getMagentoOrdersInStorePickupStatusReadyForPickup()
-    {
-        $setting = $this->getSetting(
-            'magento_orders_settings',
-            array('in_store_pickup_statues', 'ready_for_pickup'),
-            null
-        );
-
-        return $setting;
-    }
-
-    public function getMagentoOrdersInStorePickupStatusPickedUp()
-    {
-        $setting = $this->getSetting(
-            'magento_orders_settings',
-            array('in_store_pickup_statues', 'picked_up'),
-            null
-        );
-
-        return $setting;
-    }
-
     /**
      * @return bool
      */
@@ -1071,9 +983,9 @@ class Ess_M2ePro_Model_Ebay_Account extends Ess_M2ePro_Model_Component_Child_Eba
 
     public function updateRateTables()
     {
-        $sellApiTokenSession = $this->getSellApiTokenSession();
+        $isTokenExist = $this->isTokenExist();
 
-        if (empty($sellApiTokenSession)) {
+        if (empty($isTokenExist)) {
             return;
         }
 
@@ -1104,37 +1016,22 @@ class Ess_M2ePro_Model_Ebay_Account extends Ess_M2ePro_Model_Component_Child_Eba
         return !empty($rateTables);
     }
 
-    //########################################
-
-    public function isPickupStoreEnabled()
-    {
-        $additionalData = Mage::helper('M2ePro')->jsonDecode($this->getParentObject()->getData('additional_data'));
-
-        return !empty($additionalData['bopis']);
-    }
-
-    //########################################
-
-    public function getTokenSession()
-    {
-        return $this->getData('token_session');
-    }
-
-    public function getTokenExpiredDate()
-    {
-        return $this->getData('token_expired_date');
-    }
-
     // ---------------------------------------
-
-    public function getSellApiTokenSession()
-    {
-        return $this->getData('sell_api_token_session');
-    }
 
     public function getSellApiTokenExpiredDate()
     {
         return $this->getData('sell_api_token_expired_date');
+    }
+
+    //The is_token_exist flag is needed for migration from Trading Api token to Sell Api token
+    public function isTokenExist()
+    {
+        return (bool)$this->getData('is_token_exist');
+    }
+
+    public function setIsTokenExist($isTokenExist)
+    {
+        $this->setData('is_token_exist', $isTokenExist);
     }
 
     // ---------------------------------------
@@ -1283,5 +1180,12 @@ class Ess_M2ePro_Model_Ebay_Account extends Ess_M2ePro_Model_Component_Child_Eba
         return parent::delete();
     }
 
-    //########################################
+    public function isRegionOverrideRequired()
+    {
+        return (bool)$this->getSetting(
+            'magento_orders_settings',
+            array('shipping_information', 'shipping_address_region_override'),
+            1
+        );
+    }
 }

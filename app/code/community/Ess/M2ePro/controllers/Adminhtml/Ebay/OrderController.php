@@ -28,7 +28,7 @@ class Ess_M2ePro_Adminhtml_Ebay_OrderController extends Ess_M2ePro_Controller_Ad
              ->addJs('M2ePro/Order/Note.js')
              ->addJs('M2ePro/Plugin/ActionColumn.js');
 
-        $this->setPageHelpLink(null, null, "x/41oJAg");
+        $this->setPageHelpLink(null, null, "sales-and-orders");
 
         return $this;
     }
@@ -67,7 +67,7 @@ class Ess_M2ePro_Adminhtml_Ebay_OrderController extends Ess_M2ePro_Controller_Ad
 
         $this->_initAction();
 
-        $this->setPageHelpLink(null, null, "x/41oJAg");
+        $this->setPageHelpLink(null, null, "sales-and-orders");
 
         $this->_initPopUp();
 
@@ -266,104 +266,6 @@ class Ess_M2ePro_Adminhtml_Ebay_OrderController extends Ess_M2ePro_Controller_Ad
 
         return $this->_redirectUrl($this->_getRefererUrl());
     }
-
-    //########################################
-
-    public function markAsReadyForPickupAction()
-    {
-        if ($this->sendInStorePickupNotifications('ready_for_pickup')) {
-            $this->_getSession()->addSuccess(
-                Mage::helper('M2ePro')->__('Orders were marked as Ready For Pickup.')
-            );
-        } else {
-            $this->_getSession()->addError(
-                Mage::helper('M2ePro')->__('Orders were not marked as Ready For Pickup.')
-            );
-        }
-
-        return $this->_redirectUrl($this->_getRefererUrl());
-    }
-
-    public function markAsPickedUpAction()
-    {
-        if ($this->sendInStorePickupNotifications('picked_up')) {
-            $this->_getSession()->addSuccess(
-                Mage::helper('M2ePro')->__('Orders were marked as Picked Up.')
-            );
-        } else {
-            $this->_getSession()->addError(
-                Mage::helper('M2ePro')->__('Orders were not marked as Picked Up.')
-            );
-        }
-
-        return $this->_redirectUrl($this->_getRefererUrl());
-    }
-
-    public function markAsCancelledAction()
-    {
-        if ($this->sendInStorePickupNotifications('cancelled')) {
-            $this->_getSession()->addSuccess(
-                Mage::helper('M2ePro')->__('Orders were marked as Cancelled.')
-            );
-        } else {
-            $this->_getSession()->addError(
-                Mage::helper('M2ePro')->__('Orders were not marked as Cancelled.')
-            );
-        }
-
-        return $this->_redirectUrl($this->_getRefererUrl());
-    }
-
-    protected function sendInStorePickupNotifications($type)
-    {
-        $ids = $this->getRequestIds();
-
-        /** @var Ess_M2ePro_Model_Resource_Order_Collection $orderCollection */
-        $orderCollection = Mage::helper('M2ePro/Component_Ebay')->getCollection('Order');
-        $orderCollection->addFieldToFilter('id', $ids);
-
-        /** @var Ess_M2ePro_Model_Order[] $orders */
-        $orders = $orderCollection->getItems();
-
-        $successMessage = '';
-        switch ($type) {
-            case 'ready_for_pickup':
-                $successMessage = Mage::helper('M2ePro')->__('Order was marked as Ready For Pickup');
-                break;
-
-            case 'picked_up':
-                $successMessage = Mage::helper('M2ePro')->__('Order was marked as Picked Up');
-                break;
-
-            case 'cancelled':
-                $successMessage = Mage::helper('M2ePro')->__('Order was marked as Cancelled');
-                break;
-        }
-
-        foreach ($orders as $order) {
-            /** @var Ess_M2ePro_Model_Ebay_Order $ebayOrder */
-            $ebayOrder = $order->getChildObject();
-
-            $dispatcher = Mage::getModel('M2ePro/Ebay_Connector_Dispatcher');
-            $connector = $dispatcher->getVirtualConnector(
-                'store', 'update', 'order',
-                array('order_id' => $ebayOrder->getEbayOrderId(), 'type' => $type),
-                null, null, $order->getAccount()
-            );
-
-            try {
-                $dispatcher->process($connector);
-            } catch (Exception $exception) {
-                return false;
-            }
-
-            $order->addSuccessLog($successMessage);
-        }
-
-        return true;
-    }
-
-    //########################################
 
     public function createMagentoOrderAction()
     {

@@ -129,14 +129,6 @@ class Ess_M2ePro_Model_Ebay_Marketplace extends Ess_M2ePro_Model_Component_Child
     /**
      * @return bool
      */
-    public function isCashOnDeliveryEnabled()
-    {
-        return (bool)(int)$this->getData('is_cash_on_delivery');
-    }
-
-    /**
-     * @return bool
-     */
     public function isFreightShippingEnabled()
     {
         return (bool)(int)$this->getData('is_freight_shipping');
@@ -164,14 +156,6 @@ class Ess_M2ePro_Model_Ebay_Marketplace extends Ess_M2ePro_Model_Component_Child
     public function isCharityEnabled()
     {
         return (bool)(int)$this->getData('is_charity');
-    }
-
-    /**
-     * @return bool
-     */
-    public function isInStorePickupEnabled()
-    {
-        return (bool)(int)$this->getData('is_in_store_pickup');
     }
 
     /**

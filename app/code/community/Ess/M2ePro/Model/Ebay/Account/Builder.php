@@ -22,11 +22,9 @@ class Ess_M2ePro_Model_Ebay_Account_Builder extends Ess_M2ePro_Model_ActiveRecor
             'title',
             'mode',
             'user_id',
+            'is_token_exist',
             'info',
             'server_hash',
-            'token_session',
-            'token_expired_date',
-            'sell_api_token_session',
             'sell_api_token_expired_date'
         );
         foreach ($keys as $key) {
@@ -308,27 +306,21 @@ class Ess_M2ePro_Model_Ebay_Account_Builder extends Ess_M2ePro_Model_ActiveRecor
             }
         }
 
-        // In Store Pickup statuses
+        // Shipping information
         // ---------------------------------------
-        $tempKey = 'in_store_pickup_statuses';
+        $tempKey = 'shipping_information';
         $tempSettings = !empty($this->_rawData['magento_orders_settings'][$tempKey])
             ? $this->_rawData['magento_orders_settings'][$tempKey] : array();
 
         $keys = array(
-            'mode',
-            'ready_for_pickup',
-            'picked_up',
+            'ship_by_date',
+            'shipping_address_region_override',
         );
         foreach ($keys as $key) {
             if (isset($tempSettings[$key])) {
                 $data['magento_orders_settings'][$tempKey][$key] = $tempSettings[$key];
             }
         }
-
-        $data['magento_orders_settings']['shipping_information']['ship_by_date']
-            = isset($this->_rawData['magento_orders_settings']['shipping_information']['ship_by_date'])
-            ? (int)$this->_rawData['magento_orders_settings']['shipping_information']['ship_by_date']
-            : 1;
 
         $data['magento_orders_settings'] = Mage::helper('M2ePro')
             ->jsonEncode($data['magento_orders_settings']);
@@ -369,14 +361,18 @@ class Ess_M2ePro_Model_Ebay_Account_Builder extends Ess_M2ePro_Model_ActiveRecor
             'user_id'                     => '',
             'mode'                        => Account::MODE_PRODUCTION,
             'server_hash'                 => '',
-            'token_session'               => '',
-            'token_expired_date'          => '',
-            'sell_api_token_session'      => '',
             'sell_api_token_expired_date' => '',
 
             'other_listings_synchronization'  => 1,
-            'other_listings_mapping_mode'     => 0,
-            'other_listings_mapping_settings' => array(),
+            'other_listings_mapping_mode'     => 1,
+            'other_listings_mapping_settings' => array(
+                'sku' => array(
+                    'mode' => Account::OTHER_LISTINGS_MAPPING_SKU_MODE_DEFAULT,
+                    'priority' => 1
+                ),
+            ),
+            'mapping_sku_mode' => Account::OTHER_LISTINGS_MAPPING_SKU_MODE_DEFAULT,
+            'mapping_sku_priority' => 1,
 
             'magento_orders_settings' => array(
                 'listing'                  => array(
@@ -415,11 +411,6 @@ class Ess_M2ePro_Model_Ebay_Account_Builder extends Ess_M2ePro_Model_ActiveRecor
                 'tax'                      => array(
                     'mode' => Account::MAGENTO_ORDERS_TAX_MODE_MIXED
                 ),
-                'in_store_pickup_statuses' => array(
-                    'mode'             => 0,
-                    'ready_for_pickup' => '',
-                    'picked_up'        => '',
-                ),
                 'status_mapping'           => array(
                     'mode'    => Account::MAGENTO_ORDERS_STATUS_MAPPING_MODE_DEFAULT,
                     'new'     => Account::MAGENTO_ORDERS_STATUS_MAPPING_NEW,
@@ -434,6 +425,7 @@ class Ess_M2ePro_Model_Ebay_Account_Builder extends Ess_M2ePro_Model_ActiveRecor
                 ),
                 'shipping_information' => array(
                     'ship_by_date' => 1,
+                    'shipping_address_region_override' => 1,
                 ),
             ),
 
@@ -451,6 +443,4 @@ class Ess_M2ePro_Model_Ebay_Account_Builder extends Ess_M2ePro_Model_ActiveRecor
             'feedbacks_auto_response_only_positive' => 0
         );
     }
-
-    //########################################
 }

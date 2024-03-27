@@ -62,7 +62,7 @@ class Ess_M2ePro_Adminhtml_Walmart_ListingController
 
         $this->_initPopUp();
 
-        $this->setPageHelpLink(null, null, "x/zeVaAg");
+        $this->setPageHelpLink(null, null, "walmart-integration");
 
         return $this;
     }
@@ -212,7 +212,7 @@ class Ess_M2ePro_Adminhtml_Walmart_ListingController
         // ---------------------------------------
 
         $this->_initAction();
-        $this->setPageHelpLink(null, null, "x/zeVaAg");
+        $this->setPageHelpLink(null, null, "walmart-integration");
 
         $this->_addContent($this->getLayout()->createBlock('M2ePro/adminhtml_walmart_listing_view'))
             ->renderLayout();
@@ -1533,6 +1533,17 @@ class Ess_M2ePro_Adminhtml_Walmart_ListingController
                     array(
                         'result' => false,
                         'message' => Mage::helper('M2ePro')->__('Wrong parameters.')
+                    )
+                )
+            );
+        }
+
+        if (!Mage::helper('M2ePro')->isValidIdentifier($value, strtoupper($type))) {
+            return $this->getResponse()->setBody(
+                Mage::helper('M2ePro')->jsonEncode(
+                    array(
+                        'result' => false,
+                        'message' => Mage::helper('M2ePro')->__('The product Identifier has incorrect format.')
                     )
                 )
             );

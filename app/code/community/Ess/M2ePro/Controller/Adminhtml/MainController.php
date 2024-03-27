@@ -143,10 +143,6 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
         if (!$added && Mage::helper('M2ePro/Module_License')->getKey()) {
             $added = $this->addLicenseValidationFailNotifications();
         }
-
-        if (!$added && Mage::helper('M2ePro/Module_License')->getKey()) {
-            $added = $this->addLicenseStatusNotifications();
-        }
     }
 
     protected function addServerNotifications()
@@ -206,14 +202,13 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
     {
         if (!Mage::helper('M2ePro/Module_Cron')->isModeEnabled()) {
             return $this->_getSession()->addWarning(
-                'Automatic Synchronization is disabled. You can enable it under 
+                'Automatic Synchronization is disabled. You can enable it under
                     <i>System > Configuration > M2E Pro > Module & Channels > Automatic Synchronization</i>.'
             );
         }
 
         if (Mage::helper('M2ePro/Module')->isReadyToWork() &&
-            Mage::helper('M2ePro/Module_Cron')->isLastRunMoreThan(1, true) &&
-            !Mage::helper('M2ePro/Module')->isDevelopmentEnvironment()
+            Mage::helper('M2ePro/Module_Cron')->isLastRunMoreThan(1, true)
         ) {
 
             $url = Mage::helper('M2ePro/Module_Support')->getSupportUrl('/support/solutions/articles/9000200402');
@@ -279,24 +274,6 @@ HTML
         return true;
     }
 
-    protected function addLicenseStatusNotifications()
-    {
-        if (!Mage::helper('M2ePro/Module_License')->getStatus()) {
-            $url = Mage::helper('M2ePro/View_Configuration')->getLicenseUrl();
-
-            $message = Mage::helper('M2ePro')->__(
-                'Your M2E Pro Instance suspended.
-                The details can be found in <a href="%url%" target ="_blank">Billing Info</a>.',
-                $url
-            );
-
-            $this->_getSession()->addError($message);
-            return true;
-        }
-
-        return false;
-    }
-
     //########################################
 
     protected function addWizardUpgradeNotification()
@@ -316,9 +293,13 @@ HTML
             return;
         }
 
-        $notificationBlock =  $wizardHelper->createBlock('notification', $activeWizardNick);
-        if ($notificationBlock) {
-            $this->getLayout()->getBlock('content')->append($notificationBlock);
+        try {
+            $notificationBlock = $wizardHelper->createBlock('notification', $activeWizardNick);
+            if ($notificationBlock) {
+                $this->getLayout()->getBlock('content')->append($notificationBlock);
+            }
+        } catch (Exception $e) {
+            // notification block not exist
         }
     }
 

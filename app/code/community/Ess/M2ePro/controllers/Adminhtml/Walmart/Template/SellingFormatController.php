@@ -25,7 +25,7 @@ class Ess_M2ePro_Adminhtml_Walmart_Template_SellingFormatController
 
         $this->_initPopUp();
 
-        $this->setPageHelpLink(null, null, "x/zeVaAg");
+        $this->setPageHelpLink(null, null, "walmart-integration");
 
         return $this;
     }
@@ -206,41 +206,6 @@ class Ess_M2ePro_Adminhtml_Walmart_Template_SellingFormatController
         $locked && $this->_getSession()->addError($tempString);
 
         $this->_redirect('*/adminhtml_walmart_template/index');
-    }
-
-    //########################################
-
-    public function getTaxCodesPopupHtmlAction()
-    {
-        /** @var Ess_M2ePro_Block_Adminhtml_Walmart_Template_SellingFormat_TaxCodes $block */
-        $block = $this->getLayout()->createBlock(
-            'M2ePro/adminhtml_walmart_template_sellingFormat_taxCodes',
-            '',
-            array(
-                'marketplaceId' => $this->getRequest()->getParam('marketplaceId'),
-                'noSelection'   => $this->getRequest()->getParam('noSelection')
-            )
-        );
-
-        $this->getResponse()->setBody($block->toHtml());
-    }
-
-    //########################################
-
-    public function getTaxCodesGridAction()
-    {
-        /** @var Ess_M2ePro_Block_Adminhtml_Walmart_Template_SellingFormat_TaxCodes $block */
-        $block = $this->getLayout()
-            ->createBlock(
-                'M2ePro/adminhtml_walmart_template_sellingFormat_taxCodes_grid',
-                '',
-                array(
-                    'marketplaceId' => $this->getRequest()->getParam('marketplaceId'),
-                    'noSelection'   => $this->getRequest()->getParam('noSelection')
-                )
-            );
-
-        $this->getResponse()->setBody($block->toHtml());
     }
 
     //########################################

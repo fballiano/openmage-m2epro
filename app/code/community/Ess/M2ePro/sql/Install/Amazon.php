@@ -40,6 +40,7 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_amazon_account_repricing')}` 
   `account_id` INT(11) UNSIGNED NOT NULL,
   `email` VARCHAR(255) DEFAULT NULL,
   `token` VARCHAR(255) DEFAULT NULL,
+  `invalid` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `total_products` INT(11) UNSIGNED NOT NULL DEFAULT 0,
   `regular_price_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `regular_price_attribute` VARCHAR(255) NOT NULL,
@@ -211,7 +212,6 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_amazon_listing')}` (
   `general_id_custom_attribute` VARCHAR(255) NOT NULL,
   `worldwide_id_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `worldwide_id_custom_attribute` VARCHAR(255) NOT NULL,
-  `search_by_magento_title_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 1,
   `condition_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `condition_value` VARCHAR(255) NOT NULL,
   `condition_custom_attribute` VARCHAR(255) NOT NULL,
@@ -232,7 +232,7 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_amazon_listing')}` (
   `restock_date_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 1,
   `restock_date_value` DATETIME NOT NULL,
   `restock_date_custom_attribute` VARCHAR(255) NOT NULL,
-  `product_add_ids` TEXT DEFAULT NULL,
+  `product_add_ids` LONGTEXT DEFAULT NULL,
   PRIMARY KEY (`listing_id`),
   INDEX `auto_global_adding_description_template_id` (`auto_global_adding_description_template_id`),
   INDEX `auto_website_adding_description_template_id` (`auto_website_adding_description_template_id`),
@@ -320,6 +320,7 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_amazon_listing_product')}` (
   `is_afn_channel` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `is_isbn_general_id` TINYINT(2) UNSIGNED DEFAULT NULL,
   `is_general_id_owner` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
+  `is_stopped_manually` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `variation_parent_afn_state` SMALLINT(4) UNSIGNED DEFAULT NULL,
   `variation_parent_repricing_state` SMALLINT(4) UNSIGNED DEFAULT NULL,
   `defected_messages` TEXT DEFAULT NULL,
@@ -452,7 +453,6 @@ COLLATE utf8_general_ci;
 DROP TABLE IF EXISTS `{$this->_installer->getTable('m2epro_amazon_marketplace')}`;
 CREATE TABLE `{$this->_installer->getTable('m2epro_amazon_marketplace')}` (
   `marketplace_id` INT(11) UNSIGNED NOT NULL,
-  `developer_key` VARCHAR(255) DEFAULT NULL,
   `default_currency` VARCHAR(255) NOT NULL,
   `is_new_asin_available` tinyint(2) UNSIGNED NOT NULL DEFAULT 1,
   `is_merchant_fulfillment_available` tinyint(2) UNSIGNED NOT NULL DEFAULT 0,
@@ -762,6 +762,8 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_amazon_template_selling_forma
   `regular_sale_price_custom_attribute` VARCHAR(255) NOT NULL,
   `regular_sale_price_coefficient` VARCHAR(255) NOT NULL,
   `regular_price_variation_mode` TINYINT(2) UNSIGNED NOT NULL,
+  `regular_list_price_mode` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `regular_list_price_custom_attribute` VARCHAR(255) DEFAULT NULL,
   `regular_sale_price_start_date_mode` TINYINT(2) UNSIGNED NOT NULL,
   `regular_sale_price_start_date_value` DATETIME NOT NULL,
   `regular_sale_price_start_date_custom_attribute` VARCHAR(255) NOT NULL,
@@ -842,7 +844,6 @@ SQL
             <<<SQL
 
 INSERT INTO `{$this->_installer->getTable('m2epro_config')}` (`group`,`key`,`value`,`update_date`,`create_date`) VALUES
-  ('/amazon/', 'application_name', 'M2ePro - Amazon Magento Integration', NOW(), NOW()),
   ('/component/amazon/', 'mode', '1', NOW(), NOW()),
   ('/cron/task/amazon/listing/product/process_instructions/', 'mode', '1', NOW(), NOW()),
   ('/listing/product/inspector/amazon/', 'max_allowed_instructions_count', '2000', NOW(), NOW()),
@@ -859,8 +860,7 @@ INSERT INTO `{$this->_installer->getTable('m2epro_config')}` (`group`,`key`,`val
   ('/amazon/listing/product/action/delete/', 'min_allowed_wait_interval', '600', NOW(), NOW()),
   ('/cron/task/amazon/listing/synchronize_inventory/', 'interval_per_account', '86400', NOW(), NOW()),
   ('/amazon/order/settings/marketplace_25/', 'use_first_street_line_as_company', '1', NOW(), NOW()),
-  ('/amazon/repricing/', 'mode', '1', NOW(), NOW()),
-  ('/amazon/repricing/', 'base_url', 'https://repricer.m2epro.com/connector/m2epro/', NOW(), NOW()),
+  ('/amazon/repricing/', 'base_url', 'https://repricer.m2e.cloud/connector/m2epro/', NOW(), NOW()),
   ('/amazon/configuration/', 'business_mode', '0', NOW(), NOW());
 
 INSERT INTO `{$this->_installer->getTable('m2epro_marketplace')}` VALUES
@@ -882,28 +882,30 @@ INSERT INTO `{$this->_installer->getTable('m2epro_marketplace')}` VALUES
   (45, 17, 'Singapore', 'SG', 'amazon.sg', 0, 19, 'Asia / Pacific', 'amazon', NOW(), NOW()),
   (46, 18, 'India', 'IN', 'amazon.in', 0, 20, 'Europe', 'amazon', NOW(), NOW()),
   (47, 19, 'United Arab Emirates', 'AE', 'amazon.ae', 0, 21, 'Europe', 'amazon', NOW(), NOW()),
-  (48, 20, 'Belgium', 'BE', 'amazon.com.be', 0, 22, 'Europe', 'amazon', NOW(), NOW());
+  (48, 20, 'Belgium', 'BE', 'amazon.com.be', 0, 22, 'Europe', 'amazon', NOW(), NOW()),
+  (49, 21, 'South Africa', 'ZA', 'amazon.co.za', 0, 23, 'Europe', 'amazon', NOW(), NOW());
 
 INSERT INTO `{$this->_installer->getTable('m2epro_amazon_marketplace')}` VALUES
-  (24, '8636-1433-4377', 'CAD',1,0,0,0,0),
-  (25, '7078-7205-1944', 'EUR',1,1,1,1,1),
-  (26, '7078-7205-1944', 'EUR',1,0,1,1,1),
-  (28, '7078-7205-1944', 'GBP',1,1,1,1,1),
-  (29, '8636-1433-4377', 'USD',1,1,1,0,0),
-  (30, '7078-7205-1944', 'EUR',1,0,1,1,1),
-  (31, '7078-7205-1944', 'EUR',1,0,1,1,1),
-  (34, '8636-1433-4377', 'MXN',1,0,0,0,0),
-  (35, '2770-5005-3793', 'AUD',1,0,0,0,0),
-  (39, '7078-7205-1944', 'EUR',1,1,1,1,1),
-  (40, '7078-7205-1944', 'TRY',1,1,0,0,0),
-  (41, '7078-7205-1944', 'SEK',1,1,0,0,0),
-  (42, '2770-5005-3793', 'JPY',0,1,0,0,0),
-  (43, '7078-7205-1944', 'PLN',1,1,0,0,0),
-  (44, '8636-1433-4377', 'BRL',0,1,1,0,0),
-  (45, '2770-5005-3793', 'SGD',0,1,1,0,0),
-  (46, '7078-7205-1944', 'INR',0,1,1,0,0),
-  (47, '7078-7205-1944', 'AED',0,1,1,0,0),
-  (48, '7078-7205-1944', 'EUR',0,1,1,1,0);
+  (24, 'CAD',1,1,0,0,0),
+  (25, 'EUR',1,1,1,1,1),
+  (26, 'EUR',1,1,1,1,1),
+  (28, 'GBP',1,1,1,1,1),
+  (29, 'USD',1,1,1,0,0),
+  (30, 'EUR',1,1,1,1,1),
+  (31, 'EUR',1,1,1,1,1),
+  (34, 'MXN',1,1,0,0,0),
+  (35, 'AUD',1,0,0,0,0),
+  (39, 'EUR',1,1,1,1,1),
+  (40, 'TRY',1,1,0,0,0),
+  (41, 'SEK',1,1,0,0,0),
+  (42, 'JPY',0,1,0,0,0),
+  (43, 'PLN',1,1,0,0,0),
+  (44, 'BRL',0,1,1,0,0),
+  (45, 'SGD',0,1,1,0,0),
+  (46, 'INR',0,1,1,0,0),
+  (47, 'AED',0,1,1,0,0),
+  (48, 'EUR',0,1,1,1,0),
+  (49, 'ZAR',1,1,1,1,1);
 SQL
         );
     }

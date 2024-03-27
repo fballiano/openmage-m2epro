@@ -330,6 +330,7 @@ class Ess_M2ePro_Model_Amazon_Account_Builder extends Ess_M2ePro_Model_ActiveRec
         $keys = array(
             'ship_by_date',
             'update_without_track',
+            'shipping_address_region_override',
         );
         foreach ($keys as $key) {
             if (isset($tempSettings[$key])) {
@@ -372,8 +373,10 @@ class Ess_M2ePro_Model_Amazon_Account_Builder extends Ess_M2ePro_Model_ActiveRec
             'related_store_id' => 0,
 
             'other_listings_synchronization'  => 1,
-            'other_listings_mapping_mode'     => 0,
+            'other_listings_mapping_mode'     => 1,
             'other_listings_mapping_settings' => array(),
+            'mapping_sku_mode' => Account::OTHER_LISTINGS_MAPPING_SKU_MODE_DEFAULT,
+            'mapping_sku_priority' => 1,
 
             // order
             'magento_orders_settings'         => array(
@@ -440,6 +443,7 @@ class Ess_M2ePro_Model_Amazon_Account_Builder extends Ess_M2ePro_Model_ActiveRec
                 'shipping_information' => array(
                     'ship_by_date'         => 1,
                     'update_without_track' => 1,
+                    'shipping_address_region_override' => 1,
                 ),
             ),
 

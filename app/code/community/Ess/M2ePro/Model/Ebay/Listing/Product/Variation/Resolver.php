@@ -474,7 +474,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Resolver
                             'online_qty'      => $channelVariation['quantity'],
                             'online_qty_sold' => $channelVariation['quantity_sold'],
                             'status'          => $availableQty > 0 ? Ess_M2ePro_Model_Listing_Product::STATUS_LISTED
-                                : Ess_M2ePro_Model_Listing_Product::STATUS_SOLD,
+                                : Ess_M2ePro_Model_Listing_Product::STATUS_INACTIVE,
                             'add'             => 0,
                             'detele'          => 0,
 
@@ -524,12 +524,13 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Resolver
             $variationsThatCanNoBeDeleted[] = array(
                 'qty'       => 0,
                 'price'     => $variation['price'],
-                'sku'       => !empty($variation['sku']) ? 'del-' . sha1(microtime(1).$variation['sku']) : '',
+                'sku'       => !empty($variation['sku']) ? $variation['sku'] : '',
                 'add'       => 0,
                 'delete'    => 1,
                 'specifics' => $variation['specifics'],
                 'details'   => $variation['details'],
-                'has_sales' => true,
+                'has_sales' => false,
+                'from_resolver' => true,
             );
         }
 
@@ -649,7 +650,11 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Resolver
         $channelMpn = isset($channelVariation['details']['mpn']) ? $channelVariation['details']['mpn'] : null;
         $moduleMpn  = isset($moduleVariation['details']['mpn'])  ? $moduleVariation['details']['mpn']  : null;
 
-        if ($channelMpn != $moduleMpn) {
+        /** @var Ess_M2ePro_Helper_Component_Ebay_Configuration $ebayConfiguration */
+        $ebayConfiguration = Mage::helper('M2ePro/Component_Ebay_Configuration');
+        if ($channelMpn != $moduleMpn
+            && $ebayConfiguration->getIgnoreVariationMpnInResolver() === false
+        ) {
             return false;
         }
 
@@ -736,7 +741,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Resolver
     protected function addError($messageText)
     {
         $message = Mage::getModel('M2ePro/Response_Message');
-        $message->initFromPreparedData($messageText, $message::TYPE_ERROR);
+        $message->initFromPreparedData($messageText, Ess_M2ePro_Model_Response_Message::TYPE_ERROR);
 
         $this->getMessagesSet()->addEntity($message);
     }
@@ -744,7 +749,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Resolver
     protected function addWarning($messageText)
     {
         $message = Mage::getModel('M2ePro/Response_Message');
-        $message->initFromPreparedData($messageText, $message::TYPE_WARNING);
+        $message->initFromPreparedData($messageText, Ess_M2ePro_Model_Response_Message::TYPE_WARNING);
 
         $this->getMessagesSet()->addEntity($message);
     }
@@ -752,7 +757,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Resolver
     protected function addNotice($messageText)
     {
         $message = Mage::getModel('M2ePro/Response_Message');
-        $message->initFromPreparedData($messageText, $message::TYPE_INFO);
+        $message->initFromPreparedData($messageText, Ess_M2ePro_Model_Response_Message::TYPE_NOTICE);
 
         $this->getMessagesSet()->addEntity($message);
     }

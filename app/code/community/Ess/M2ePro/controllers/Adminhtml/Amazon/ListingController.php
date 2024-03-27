@@ -51,7 +51,6 @@ class Ess_M2ePro_Adminhtml_Amazon_ListingController
             ->addJs('M2ePro/Amazon/Listing/Template/ProductTaxCode.js')
             ->addJs('M2ePro/Amazon/Listing/VariationProductManage.js')
             ->addJs('M2ePro/Amazon/Listing/Fulfillment.js')
-            ->addJs('M2ePro/Amazon/Listing/Repricing.js')
             ->addJs('M2ePro/Amazon/Listing/RepricingPrice.js')
             ->addJs('M2ePro/Amazon/Listing/Other/Grid.js')
 
@@ -71,7 +70,7 @@ class Ess_M2ePro_Adminhtml_Amazon_ListingController
 
         $this->_initPopUp();
 
-        $this->setPageHelpLink(null, null, "x/T4kVAQ");
+        $this->setPageHelpLink(null, null, "m2e-pro-listings");
 
         return $this;
     }
@@ -222,7 +221,7 @@ class Ess_M2ePro_Adminhtml_Amazon_ListingController
         // ---------------------------------------
 
         $this->_initAction();
-        $this->setPageHelpLink(null, null, "x/Dd0VAg");
+        $this->setPageHelpLink(null, null, "m2e-pro-listings");
 
         $this->_addContent($this->getLayout()->createBlock('M2ePro/adminhtml_amazon_listing_view'))
             ->renderLayout();
@@ -321,8 +320,6 @@ class Ess_M2ePro_Adminhtml_Amazon_ListingController
             'general_id_custom_attribute',
             'worldwide_id_mode',
             'worldwide_id_custom_attribute',
-
-            'search_by_magento_title_mode',
 
             'condition_mode',
             'condition_value',
@@ -1247,10 +1244,20 @@ class Ess_M2ePro_Adminhtml_Amazon_ListingController
             !$listingProduct->getData('is_general_id_owner') &&
             !$listingProduct->getData('general_id')
         ) {
-            $marketplaceObj = $listingProduct->getListing()->getMarketplace();
-
             /** @var $dispatcher Ess_M2ePro_Model_Amazon_Search_Dispatcher */
             $dispatcher = Mage::getModel('M2ePro/Amazon_Search_Dispatcher');
+
+            if ($dispatcher->createCustomSearchHandler()->resolveIdentifierType($query) === null) {
+                return $this->getResponse()->setBody(
+                    Mage::helper('M2ePro')->jsonEncode(
+                        array(
+                            'result' => 'error',
+                            'data'   => Mage::helper('M2ePro')->__('Invalid Product ID format.')
+                        )
+                    )
+                );
+            }
+
             $result = $dispatcher->runCustom($listingProduct, $query);
 
             if ($result === false || $result['data'] === false) {
@@ -1266,6 +1273,7 @@ class Ess_M2ePro_Adminhtml_Amazon_ListingController
                 );
             }
 
+            $marketplaceObj = $listingProduct->getListing()->getMarketplace();
             Mage::helper('M2ePro/Data_Global')->setValue('temp_data', $result);
             Mage::helper('M2ePro/Data_Global')->setValue('product_id', $productId);
             Mage::helper('M2ePro/Data_Global')->setValue('marketplace_id', $marketplaceObj->getId());
@@ -1388,8 +1396,10 @@ class Ess_M2ePro_Adminhtml_Amazon_ListingController
         }
 
         $searchStatusNotFound = Ess_M2ePro_Model_Amazon_Listing_Product::SEARCH_SETTINGS_STATUS_NOT_FOUND;
+        $searchStatusIdentifierInvalid = Ess_M2ePro_Model_Amazon_Listing_Product::SEARCH_SETTINGS_IDENTIFIER_INVALID;
         $selectError->where(
             'alp.search_settings_status = ' . $searchStatusNotFound
+            . ' OR alp.search_settings_status = ' . $searchStatusIdentifierInvalid
         );
 
         $errorsCount = Mage::getResourceModel('core/config')

@@ -289,6 +289,7 @@ class Ess_M2ePro_Model_Amazon_Listing_Product_Instruction_SynchronizationTemplat
         }
 
         if ($amazonSynchronizationTemplate->isStopAdvancedRulesEnabled()) {
+            /** @var \Ess_M2ePro_Model_Magento_Product_Rule $ruleModel */
             $ruleModel = Mage::getModel('M2ePro/Magento_Product_Rule')->setData(
                 array(
                     'store_id' => $listingProduct->getListing()->getStoreId(),
@@ -296,6 +297,11 @@ class Ess_M2ePro_Model_Amazon_Listing_Product_Instruction_SynchronizationTemplat
                 )
             );
             $ruleModel->loadFromSerialized($amazonSynchronizationTemplate->getStopAdvancedRulesFilters());
+            $conditions = $ruleModel->getConditions()->getConditions();
+
+            if (empty($conditions)) {
+                return false;
+            }
 
             if ($ruleModel->validate($listingProduct->getMagentoProduct()->getProduct())) {
                 return true;
@@ -371,8 +377,7 @@ class Ess_M2ePro_Model_Amazon_Listing_Product_Instruction_SynchronizationTemplat
             return false;
         }
 
-        if (Mage::helper('M2ePro/Component_Amazon_Repricing')->isEnabled() &&
-            $amazonListingProduct->isRepricingManaged()) {
+        if ($amazonListingProduct->isRepricingManaged()) {
             return false;
         }
 

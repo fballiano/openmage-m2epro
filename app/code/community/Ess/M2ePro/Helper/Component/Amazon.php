@@ -32,6 +32,7 @@ class Ess_M2ePro_Helper_Component_Amazon extends Mage_Core_Helper_Abstract
     const MARKETPLACE_IN = 46;
     const MARKETPLACE_AE = 47;
     const MARKETPLACE_BE = 48;
+    const MARKETPLACE_ZA = 49;
 
     const MAX_ALLOWED_FEED_REQUESTS_PER_HOUR = 30;
     const SKU_MAX_LENGTH = 40;
@@ -108,21 +109,6 @@ class Ess_M2ePro_Helper_Component_Amazon extends Mage_Core_Helper_Abstract
 
     //########################################
 
-    public function getRegisterUrl($marketplaceId = null)
-    {
-        $marketplaceId = (int)$marketplaceId;
-        $marketplaceId <= 0 && $marketplaceId = self::MARKETPLACE_US;
-
-        $domain = $this->getCachedObject('Marketplace', $marketplaceId)->getUrl();
-        $applicationName = Mage::helper('M2ePro/Component_Amazon')->getApplicationName();
-
-        return 'https://sellercentral.'.
-                $domain.
-                '/gp/mws/registration/register.html?ie=UTF8&*Version*=1&*entries*=0&applicationName='.
-                rawurlencode($applicationName).'&appDevMWSAccountId='.
-                $this->getCachedObject('Marketplace', $marketplaceId)->getDeveloperKey();
-    }
-
     public function getItemUrl($productId, $marketplaceId = null)
     {
         $marketplaceId = (int)$marketplaceId;
@@ -158,11 +144,6 @@ class Ess_M2ePro_Helper_Component_Amazon extends Mage_Core_Helper_Abstract
         return true;
     }
 
-    public function getApplicationName()
-    {
-        return Mage::helper('M2ePro/Module')->getConfig()->getGroupValue('/amazon/', 'application_name');
-    }
-
     // ----------------------------------------
 
     public function getCarriers()
@@ -193,7 +174,6 @@ class Ess_M2ePro_Helper_Component_Amazon extends Mage_Core_Helper_Abstract
     {
         return $this->getCollection('Marketplace')
                     ->addFieldToFilter('status', Ess_M2ePro_Model_Marketplace::STATUS_ENABLE)
-                    ->addFieldToFilter('developer_key', array('notnull' => true))
                     ->setOrder('sorder', 'ASC');
     }
 
@@ -307,6 +287,7 @@ class Ess_M2ePro_Helper_Component_Amazon extends Mage_Core_Helper_Abstract
             self::MARKETPLACE_IN,
             self::MARKETPLACE_AE,
             self::MARKETPLACE_BE,
+            self::MARKETPLACE_ZA,
         );
     }
 

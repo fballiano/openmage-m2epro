@@ -102,25 +102,18 @@ class Ess_M2ePro_Model_Cron_Task_Walmart_Order_Creator
             }
         }
 
-        $magentoOrder = $order->getMagentoOrder();
-        if ($magentoOrder !== null
-            && (
-                $magentoOrder->getState() === Mage_Sales_Model_Order::STATE_CLOSED
-                || $magentoOrder->getState() === Mage_Sales_Model_Order::STATE_CANCELED
-            )
-        ) {
-            return;
-        }
-
         if ($order->getReserve()->isNotProcessed() && $order->isReservable()) {
             $order->getReserve()->place();
         }
 
-        if ($order->getChildObject()->canCreateInvoice()) {
+        /** @var Ess_M2ePro_Model_Walmart_Order $walmartOrder */
+        $walmartOrder = $order->getChildObject();
+        if ($walmartOrder->canCreateInvoice()) {
             $order->createInvoice();
         }
 
         $order->createShipment();
+        $walmartOrder->createTracks();
 
         if ($order->getStatusUpdateRequired()) {
             $order->updateMagentoOrderStatus();

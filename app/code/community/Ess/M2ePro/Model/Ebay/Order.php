@@ -327,16 +327,6 @@ class Ess_M2ePro_Model_Ebay_Order extends Ess_M2ePro_Model_Component_Child_Ebay_
     }
 
     /**
-     * @return float
-     */
-    public function getCashOnDeliveryCost()
-    {
-        $shippingDetails = $this->getShippingDetails();
-        return isset($shippingDetails['cash_on_delivery_cost'])
-            ? (float)$shippingDetails['cash_on_delivery_cost'] : 0.0;
-    }
-
-    /**
      * @return Ess_M2ePro_Model_Ebay_Order_ShippingAddress
      */
     public function getShippingAddress()
@@ -433,27 +423,6 @@ class Ess_M2ePro_Model_Ebay_Order extends Ess_M2ePro_Model_Component_Child_Ebay_
         return isset($shippingDetails['click_and_collect_details'])
             ? $shippingDetails['click_and_collect_details'] : array();
     }
-
-    // ---------------------------------------
-
-    /**
-     * @return bool
-     */
-    public function isUseInStorePickup()
-    {
-        $inStorePickupDetails = $this->getInStorePickupDetails();
-        return !empty($inStorePickupDetails);
-    }
-
-    public function getInStorePickupDetails()
-    {
-        $shippingDetails = $this->getShippingDetails();
-
-        return isset($shippingDetails['in_store_pickup_details'])
-            ? $shippingDetails['in_store_pickup_details'] : array();
-    }
-
-    // ---------------------------------------
 
     /**
      * @return array
@@ -1137,19 +1106,20 @@ class Ess_M2ePro_Model_Ebay_Order extends Ess_M2ePro_Model_Component_Child_Ebay_
             return false;
         }
 
-        $supportedMarketplaces = array(
-            EbayHelper::MARKETPLACE_US,
-            EbayHelper::MARKETPLACE_CA,
-            EbayHelper::MARKETPLACE_UK,
-            EbayHelper::MARKETPLACE_AU,
-            EbayHelper::MARKETPLACE_DE
-        );
-
-        if (!in_array($this->getParentObject()->getMarketplaceId(), $supportedMarketplaces)) {
+        if ($this->isMarketplaceNotSupportedForRefund()) {
             return false;
         }
 
         return true;
+    }
+
+    private function isMarketplaceNotSupportedForRefund()
+    {
+        $notSupportedMarketplacesForRefund = array(
+            EbayHelper::MARKETPLACE_IN
+        );
+
+        return in_array($this->getParentObject()->getMarketplaceId(), $notSupportedMarketplacesForRefund);
     }
 
     /**

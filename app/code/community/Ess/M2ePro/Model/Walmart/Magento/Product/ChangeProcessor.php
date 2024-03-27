@@ -28,6 +28,10 @@ class Ess_M2ePro_Model_Walmart_Magento_Product_ChangeProcessor
 
     public function getInstructionsDataByAttributes(array $attributes)
     {
+        if (empty($attributes)) {
+            return array();
+        }
+
         $data = array();
 
         if (array_intersect($attributes, $this->getLagTimeTrackingAttributes())) {
@@ -117,8 +121,6 @@ class Ess_M2ePro_Model_Walmart_Magento_Product_ChangeProcessor
             $trackingAttributes,
             $walmartSellingFormatTemplate->getSaleTimeStartDateAttributes(),
             $walmartSellingFormatTemplate->getSaleTimeEndDateAttributes(),
-            $walmartSellingFormatTemplate->getMapPriceAttributes(),
-            $walmartSellingFormatTemplate->getProductTaxCodeAttributes(),
             $walmartSellingFormatTemplate->getItemWeightAttributes(),
             $walmartSellingFormatTemplate->getMustShipAloneAttributes(),
             $walmartSellingFormatTemplate->getShipsInOriginalPackagingModeAttributes(),
@@ -158,7 +160,6 @@ class Ess_M2ePro_Model_Walmart_Magento_Product_ChangeProcessor
             $walmartDescriptionTemplate->getManufacturerAttributes(),
             $walmartDescriptionTemplate->getManufacturerPartNumberAttributes(),
             $walmartDescriptionTemplate->getMsrpRrpAttributes(),
-            $walmartDescriptionTemplate->getKeywordsAttributes(),
             $walmartDescriptionTemplate->getImageMainAttributes(),
             $walmartDescriptionTemplate->getGalleryImagesAttributes(),
             $walmartDescriptionTemplate->getImageVariationDifferenceAttributes()

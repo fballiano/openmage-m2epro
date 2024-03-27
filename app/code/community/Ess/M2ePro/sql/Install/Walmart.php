@@ -69,7 +69,6 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_walmart_dictionary_marketplac
   `client_details_last_update_date` DATETIME DEFAULT NULL,
   `server_details_last_update_date` DATETIME DEFAULT NULL,
   `product_data` LONGTEXT DEFAULT NULL,
-  `tax_codes` LONGTEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
   INDEX `marketplace_id` (`marketplace_id`)
 )
@@ -129,18 +128,6 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_walmart_item')}` (
   INDEX `product_id` (`product_id`),
   INDEX `sku` (`sku`),
   INDEX `store_id` (`store_id`)
-)
-ENGINE = INNODB
-CHARACTER SET utf8
-COLLATE utf8_general_ci;
-
-DROP TABLE IF EXISTS `{$this->_installer->getTable('m2epro_walmart_inventory_wpid')}`;
-CREATE TABLE `{$this->_installer->getTable('m2epro_walmart_inventory_wpid')}` (
-    `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-    `account_id` INT(11) UNSIGNED NOT NULL,
-    `wpid` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `account_id__wpid` (`account_id`, `wpid`)
 )
 ENGINE = INNODB
 CHARACTER SET utf8
@@ -228,6 +215,7 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_walmart_listing_product')}` (
   `publish_status` VARCHAR(255) DEFAULT NULL,
   `lifecycle_status` VARCHAR(255) DEFAULT NULL,
   `status_change_reasons` TEXT DEFAULT NULL,
+  `is_stopped_manually` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `online_price` DECIMAL(12, 4) UNSIGNED DEFAULT NULL,
   `is_online_price_invalid` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `online_promotions` VARCHAR(40) DEFAULT NULL,
@@ -392,6 +380,7 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_walmart_order_item')}` (
   `sku` VARCHAR(255) DEFAULT NULL,
   `price` DECIMAL(12, 4) UNSIGNED NOT NULL,
   `qty_purchased` INT(11) UNSIGNED NOT NULL DEFAULT 0,
+  `tracking_details` TEXT DEFAULT NULL,
   `buyer_cancellation_requested` SMALLINT(4) UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (`order_item_id`),
   INDEX `sku` (`sku`),
@@ -479,9 +468,6 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_walmart_template_description'
   `key_features` TEXT NOT NULL,
   `other_features_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `other_features` TEXT NOT NULL,
-  `keywords_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
-  `keywords_custom_value` VARCHAR(4000) DEFAULT NULL,
-  `keywords_custom_attribute` VARCHAR(4000) DEFAULT NULL,
   `attributes_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `attributes` TEXT NOT NULL,
   PRIMARY KEY (`template_description_id`)
@@ -503,8 +489,6 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_walmart_template_selling_form
   `qty_max_posted_value` INT(11) UNSIGNED DEFAULT NULL,
   `price_mode` TINYINT(2) UNSIGNED NOT NULL,
   `price_custom_attribute` VARCHAR(255) NOT NULL,
-  `map_price_mode` TINYINT(2) UNSIGNED NOT NULL,
-  `map_price_custom_attribute` VARCHAR(255) NOT NULL,
   `price_coefficient` VARCHAR(255) NOT NULL,
   `price_variation_mode` TINYINT(2) UNSIGNED NOT NULL,
   `price_vat_percent` DECIMAL(10,2) UNSIGNED DEFAULT NULL,
@@ -512,9 +496,6 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_walmart_template_selling_form
   `lag_time_mode` TINYINT(2) UNSIGNED NOT NULL,
   `lag_time_value` INT(11) UNSIGNED NOT NULL,
   `lag_time_custom_attribute` VARCHAR(255) NOT NULL,
-  `product_tax_code_mode` TINYINT(2) UNSIGNED NOT NULL,
-  `product_tax_code_custom_value` VARCHAR(255) NOT NULL,
-  `product_tax_code_custom_attribute` VARCHAR(255) NOT NULL,
   `item_weight_mode` TINYINT(2) UNSIGNED DEFAULT 0,
   `item_weight_custom_value` DECIMAL(10, 2) UNSIGNED DEFAULT NULL,
   `item_weight_custom_attribute` VARCHAR(255) DEFAULT NULL,
@@ -633,15 +614,9 @@ INSERT INTO `{$this->_installer->getTable('m2epro_config')}` (`group`,`key`,`val
   ('/walmart/configuration/', 'sku_modification_mode', '0', NOW(), NOW()),
   ('/walmart/configuration/', 'sku_modification_custom_value', NULL, NOW(), NOW()),
   ('/walmart/configuration/', 'generate_sku_mode', '0', NOW(), NOW()),
-  ('/walmart/configuration/', 'product_id_override_mode', '0', NOW(), NOW()),                                                                                     
-  ('/walmart/configuration/', 'upc_mode', '0', NOW(), NOW()),
-  ('/walmart/configuration/', 'upc_custom_attribute', NULL, NOW(), NOW()),
-  ('/walmart/configuration/', 'ean_mode', '0', NOW(), NOW()),
-  ('/walmart/configuration/', 'ean_custom_attribute', NULL, NOW(), NOW()),
-  ('/walmart/configuration/', 'gtin_mode', '0', NOW(), NOW()),
-  ('/walmart/configuration/', 'gtin_custom_attribute', NULL, NOW(), NOW()),
-  ('/walmart/configuration/', 'isbn_mode', '0', NOW(), NOW()),
-  ('/walmart/configuration/', 'isbn_custom_attribute', NULL, NOW(), NOW()),
+  ('/walmart/configuration/', 'product_id_override_mode', '0', NOW(), NOW()),   
+  ('/walmart/configuration/', 'product_id_mode', '0', NOW(), NOW()),
+  ('/walmart/configuration/', 'product_id_custom_attribute', NULL, NOW(), NOW()),
   ('/walmart/configuration/', 'option_images_url_mode', '0', NOW(), NOW()),  
   ('/listing/product/inspector/walmart/', 'max_allowed_instructions_count', '2000', NOW(), NOW()),
   ('/walmart/listing/product/action/scheduled_data/', 'limit', '20000', NOW(), NOW()),

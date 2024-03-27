@@ -66,7 +66,7 @@ class Ess_M2ePro_Adminhtml_Ebay_ListingController extends Ess_M2ePro_Controller_
 
         $this->_initPopUp();
 
-        $this->setPageHelpLink(null, null, "x/CFsJAg");
+        $this->setPageHelpLink(null, null, "m2e-pro-listing");
 
         return $this;
     }
@@ -256,7 +256,7 @@ class Ess_M2ePro_Adminhtml_Ebay_ListingController extends Ess_M2ePro_Controller_
 
         $this->_initAction();
 
-        $this->setPageHelpLink(null, null, "x/CFsJAg");
+        $this->setPageHelpLink(null, null, "m2e-pro-listing");
 
         $this->getLayout()->getBlock('head')
             ->setCanLoadExtJs(true)
@@ -266,7 +266,6 @@ class Ess_M2ePro_Adminhtml_Ebay_ListingController extends Ess_M2ePro_Controller_
             ->addJs('M2ePro/Ebay/Template/Category/Chooser.js')
             ->addJs('M2ePro/Ebay/Template/Category/Chooser/Browse.js')
             ->addJs('M2ePro/Ebay/Template/Category/Specifics.js')
-            ->addJs('M2ePro/Ebay/Template/Payment.js')
             ->addJs('M2ePro/Ebay/Template/Return.js')
             ->addJs('M2ePro/Ebay/Template/Shipping.js')
             ->addJs('M2ePro/Ebay/Template/Shipping/ExcludedLocations.js')
@@ -520,9 +519,7 @@ class Ess_M2ePro_Adminhtml_Ebay_ListingController extends Ess_M2ePro_Controller_
             'status', array(
                 'in' => array(
                     Ess_M2ePro_Model_Listing_Product::STATUS_NOT_LISTED,
-                    Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED,
-                    Ess_M2ePro_Model_Listing_Product::STATUS_FINISHED,
-                    Ess_M2ePro_Model_Listing_Product::STATUS_SOLD,
+                    Ess_M2ePro_Model_Listing_Product::STATUS_INACTIVE,
                     Ess_M2ePro_Model_Listing_Product::STATUS_BLOCKED,
                 )
             )
@@ -1218,6 +1215,7 @@ class Ess_M2ePro_Adminhtml_Ebay_ListingController extends Ess_M2ePro_Controller_
         $params['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_USER;
         $params['is_realtime'] = true;
 
+        /** @var Ess_M2ePro_Model_Ebay_Connector_Item_Dispatcher $dispatcherObject */
         $dispatcherObject = Mage::getModel('M2ePro/Ebay_Connector_Item_Dispatcher');
         $result = (int)$dispatcherObject->process($action, $listingsProductsIds, $params);
 

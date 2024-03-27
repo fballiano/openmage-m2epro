@@ -105,12 +105,6 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
         $this->_returnTemplateModel                 = null;
         $this->_shippingTemplateModel               = null;
 
-        if (Mage::helper('M2ePro/Component_Ebay_PickupStore')->isFeatureEnabled()) {
-            Mage::getResourceModel('M2ePro/Ebay_Listing_Product_PickupStore')->processDeletedProduct(
-                $this->getParentObject()
-            );
-        }
-
         $this->delete();
 
         return true;
@@ -1003,7 +997,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
         $src = $this->getEbaySellingFormatTemplate()->getFixedPriceSource();
 
         $vatPercent = null;
-        if ($this->getEbaySellingFormatTemplate()->isPriceIncreaseVatPercentEnabled()) {
+        if ($this->getEbaySellingFormatTemplate()->isVatModeOnTopOfPrice()) {
             $vatPercent = $this->getEbaySellingFormatTemplate()->getVatPercent();
         }
 
@@ -1030,7 +1024,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
         $src = $this->getEbaySellingFormatTemplate()->getStartPriceSource();
 
         $vatPercent = null;
-        if ($this->getEbaySellingFormatTemplate()->isPriceIncreaseVatPercentEnabled()) {
+        if ($this->getEbaySellingFormatTemplate()->isVatModeOnTopOfPrice()) {
             $vatPercent = $this->getEbaySellingFormatTemplate()->getVatPercent();
         }
 
@@ -1055,7 +1049,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
         $src = $this->getEbaySellingFormatTemplate()->getReservePriceSource();
 
         $vatPercent = null;
-        if ($this->getEbaySellingFormatTemplate()->isPriceIncreaseVatPercentEnabled()) {
+        if ($this->getEbaySellingFormatTemplate()->isVatModeOnTopOfPrice()) {
             $vatPercent = $this->getEbaySellingFormatTemplate()->getVatPercent();
         }
 
@@ -1080,7 +1074,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
         $src = $this->getEbaySellingFormatTemplate()->getBuyItNowPriceSource();
 
         $vatPercent = null;
-        if ($this->getEbaySellingFormatTemplate()->isPriceIncreaseVatPercentEnabled()) {
+        if ($this->getEbaySellingFormatTemplate()->isVatModeOnTopOfPrice()) {
             $vatPercent = $this->getEbaySellingFormatTemplate()->getVatPercent();
         }
 
@@ -1101,7 +1095,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
         $src = $this->getEbaySellingFormatTemplate()->getPriceDiscountStpSource();
 
         $vatPercent = null;
-        if ($this->getEbaySellingFormatTemplate()->isPriceIncreaseVatPercentEnabled()) {
+        if ($this->getEbaySellingFormatTemplate()->isVatModeOnTopOfPrice()) {
             $vatPercent = $this->getEbaySellingFormatTemplate()->getVatPercent();
         }
 
@@ -1116,7 +1110,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
         $src = $this->getEbaySellingFormatTemplate()->getPriceDiscountMapSource();
 
         $vatPercent = null;
-        if ($this->getEbaySellingFormatTemplate()->isPriceIncreaseVatPercentEnabled()) {
+        if ($this->getEbaySellingFormatTemplate()->isVatModeOnTopOfPrice()) {
             $vatPercent = $this->getEbaySellingFormatTemplate()->getVatPercent();
         }
 

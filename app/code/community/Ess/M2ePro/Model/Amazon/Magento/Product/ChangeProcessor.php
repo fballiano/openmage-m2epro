@@ -30,6 +30,10 @@ class Ess_M2ePro_Model_Amazon_Magento_Product_ChangeProcessor
 
     public function getInstructionsDataByAttributes(array $attributes)
     {
+        if (empty($attributes)) {
+            return array();
+        }
+
         $data = array();
 
         if (array_intersect($attributes, $this->getQtyTrackingAttributes())) {
@@ -169,6 +173,15 @@ class Ess_M2ePro_Model_Amazon_Magento_Product_ChangeProcessor
             $trackingAttributes = array_merge(
                 $trackingAttributes, $shippingTemplate->getTemplateNameAttributes()
             );
+        }
+
+        if ($sellingTemplate = $this->getAmazonListingProduct()->getSellingFormatTemplate()) {
+            /** @var Ess_M2ePro_Model_Amazon_Template_SellingFormat $amazonSellingTemplate */
+            $amazonSellingTemplate = $sellingTemplate->getChildObject();
+            if (!$amazonSellingTemplate->isListPriceModeNone()) {
+                $listPriceAttribute = $amazonSellingTemplate->getListPriceAttribute();
+                $trackingAttributes = array_merge($trackingAttributes, array($listPriceAttribute));
+            }
         }
 
         return array_unique($trackingAttributes);

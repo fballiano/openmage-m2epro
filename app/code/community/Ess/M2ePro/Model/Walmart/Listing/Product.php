@@ -8,6 +8,7 @@
 
 use Ess_M2ePro_Model_Listing_Product_PriceCalculator as PriceCalculator;
 use Ess_M2ePro_Model_Walmart_Template_SellingFormat_Promotion as Promotion;
+use Ess_M2ePro_Model_Resource_Walmart_Listing_Product as Resource;
 
 /**
  * @method Ess_M2ePro_Model_Listing_Product getParentObject()
@@ -478,6 +479,16 @@ class Ess_M2ePro_Model_Walmart_Listing_Product extends Ess_M2ePro_Model_Componen
     /**
      * @return bool
      */
+    public function isStoppedManually()
+    {
+        return (bool)$this->getData(Resource::IS_STOPPED_MANUALLY_FIELD);
+    }
+
+    // ---------------------------------------
+
+    /**
+     * @return bool
+     */
     public function isOnlinePriceInvalid()
     {
         return (bool)$this->getData('is_online_price_invalid');
@@ -637,40 +648,6 @@ class Ess_M2ePro_Model_Walmart_Listing_Product extends Ess_M2ePro_Model_Componen
         $calculator->setSource($src)->setProduct($this->getParentObject());
         $calculator->setCoefficient($this->getWalmartSellingFormatTemplate()->getPriceCoefficient());
         $calculator->setVatPercent($this->getWalmartSellingFormatTemplate()->getPriceVatPercent());
-
-        return $calculator->getProductValue();
-    }
-
-    /**
-     * @return float|int
-     * @throws Ess_M2ePro_Model_Exception
-     * @throws Ess_M2ePro_Model_Exception_Logic
-     */
-    public function getMapPrice()
-    {
-        if ($this->getVariationManager()->isPhysicalUnit() &&
-            $this->getVariationManager()->getTypeModel()->isVariationProductMatched()) {
-            $variations = $this->getVariations(true);
-            if (empty($variations)) {
-                throw new Ess_M2ePro_Model_Exception_Logic(
-                    'There are no variations for a variation product.',
-                    array(
-                        'listing_product_id' => $this->getId()
-                    )
-                );
-            }
-
-            /** @var $variation Ess_M2ePro_Model_Listing_Product_Variation */
-            $variation = reset($variations);
-
-            return $variation->getChildObject()->getMapPrice();
-        }
-
-        $src = $this->getWalmartSellingFormatTemplate()->getMapPriceSource();
-
-        /** @var $calculator Ess_M2ePro_Model_Walmart_Listing_Product_PriceCalculator */
-        $calculator = Mage::getModel('M2ePro/Walmart_Listing_Product_PriceCalculator');
-        $calculator->setSource($src)->setProduct($this->getParentObject());
 
         return $calculator->getProductValue();
     }

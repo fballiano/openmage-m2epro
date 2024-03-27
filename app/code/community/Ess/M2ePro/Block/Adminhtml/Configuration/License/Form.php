@@ -23,7 +23,7 @@ class Ess_M2ePro_Block_Adminhtml_Configuration_License_Form extends Ess_M2ePro_B
 
         // ---------------------------------------
 
-        $this->setPageHelpLink("x/qVoJAg");
+        $this->setPageHelpLink("global-settings");
     }
 
     //########################################
@@ -60,7 +60,6 @@ class Ess_M2ePro_Block_Adminhtml_Configuration_License_Form extends Ess_M2ePro_B
         } catch (Exception $exception) {}
 
         $this->key = Mage::helper('M2ePro')->escapeHtml(Mage::helper('M2ePro/Module_License')->getKey());
-        $this->status = Mage::helper('M2ePro/Module_License')->getStatus();
 
         $this->licenseData = array(
             'domain'     => Mage::helper('M2ePro')->escapeHtml(Mage::helper('M2ePro/Module_License')->getDomain()),

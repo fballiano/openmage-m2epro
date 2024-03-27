@@ -542,7 +542,7 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping extends Ess_M2ePro_Model_Component
                 Mage::helper("M2ePro/Module_Support")->getDocumentationUrl(
                     null,
                     null,
-                    "x/X3NPAg#eBayGuaranteedDelivery-HowtodownloadeBayShippingRateTablestoM2EPro?"
+                    "set-up-shipping-policy#6e8b3db9007740e1a87f1d2a26209a10"
                 )
             )
         );
@@ -714,20 +714,6 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping extends Ess_M2ePro_Model_Component
         return is_array($excludedLocations) ? $excludedLocations : array();
     }
 
-    /**
-     * @return float|null
-     */
-    public function getCashOnDeliveryCost()
-    {
-        $tempData = $this->getData('cash_on_delivery_cost');
-
-        if (!empty($tempData)) {
-            return (float)$tempData;
-        }
-
-        return null;
-    }
-
     // ---------------------------------------
 
     /**
@@ -802,6 +788,30 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping extends Ess_M2ePro_Model_Component
         }
 
         return $returns;
+    }
+
+    /**
+     * @param \Ess_M2ePro_Model_Account $account
+     * @return void
+     * @throws \Ess_M2ePro_Model_Exception_Logic
+     */
+    public function deleteShippingRateTables(Ess_M2ePro_Model_Account $account)
+    {
+        $this->deleteShippingRateTable($account->getId(), 'local_shipping_rate_table');
+        $this->deleteShippingRateTable($account->getId(), 'international_shipping_rate_table');
+    }
+
+    /**
+     * @param int|string $accountId
+     * @param string $settingsField
+     * @return void
+     * @throws \Ess_M2ePro_Model_Exception_Logic
+     */
+    private function deleteShippingRateTable($accountId, $settingsField)
+    {
+        $rateTables = $this->getSettings($settingsField);
+        unset($rateTables[$accountId]);
+        $this->setSettings($settingsField, $rateTables);
     }
 
     //########################################

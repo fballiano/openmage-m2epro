@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * @author     M2E Pro Developers Team
  * @copyright  M2E LTD
  * @license    Commercial use is forbidden
@@ -53,13 +53,12 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
             ->addJs('M2ePro/Amazon/Listing/ProductSearch.js')
             ->addJs('M2ePro/Amazon/Listing/VariationProductManage.js')
             ->addJs('M2ePro/Amazon/Listing/Fulfillment.js')
-            ->addJs('M2ePro/Amazon/Listing/Repricing.js')
             ->addJs('M2ePro/Amazon/Listing/NewAsinTemplateDescriptionGrid.js')
             ->addJs('M2ePro/Amazon/Listing/AutoAction.js');
 
         $this->_initPopUp();
 
-        $this->setPageHelpLink(null, null, "x/MogVAQ");
+        $this->setPageHelpLink(null, null, "adding-magento-products-manually");
 
         return $this;
     }
@@ -172,7 +171,7 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
 
         $this->_initAction();
 
-        $this->setPageHelpLink(null, null, "x/N4gVAQ");
+        $this->setPageHelpLink(null, null, "adding-magento-products-manually#fb9309f0bc0041429e9396a8f4606096");
 
         $this->_addContent(
             $this->getLayout()->createBlock('M2ePro/adminhtml_amazon_listing_product_add_sourceMode_product')
@@ -220,7 +219,7 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
 
         $this->_initAction();
 
-        $this->setPageHelpLink(null, null, "x/P4gVAQ");
+        $this->setPageHelpLink(null, null, "adding-magento-products-manually#2fafbea8ec1e44bab19287832783551a");
 
         $gridContainer = $this->getLayout()->createBlock(
             'M2ePro/adminhtml_amazon_listing_product_add_sourceMode_category'
@@ -279,7 +278,7 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
 
         $this->_initAction();
 
-        $this->setPageHelpLink(null, null, "x/xeMVAg");
+        $this->setPageHelpLink(null, null, "asin-isbn-management#271e3b536b4045cf847a54ec26564ff3");
 
         $this->_addContent($this->getLayout()->createBlock('M2ePro/adminhtml_amazon_listing_product_add_searchAsin'))
             ->renderLayout();
@@ -299,7 +298,7 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
 
         $this->_initAction();
 
-        $this->setPageHelpLink(null, null, "x/a_MVAg");
+        $this->setPageHelpLink(null, null, "asin-isbn-management#48fdfeea23a34d2bb56830135a4c1b43");
 
         $this->_addContent($block)->renderLayout();
     }
@@ -423,10 +422,31 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
 
     //########################################
 
+    /**
+     * @throws Ess_M2ePro_Model_Exception
+     */
     public function removeAddedProductsAction()
     {
         $listingProductsIds = $this->getListing()->getSetting('additional_data', 'adding_listing_products_ids');
+        $this->deleteListingProducts($listingProductsIds);
 
+        $this->_redirect(
+            '*/adminhtml_amazon_listing_productAdd/index', array(
+                'step'   => 2,
+                'id'     => $this->getRequest()->getParam('id'),
+                'wizard' => $this->getRequest()->getParam('wizard')
+            )
+        );
+        return;
+    }
+
+    /**
+     * @param array $listingProductsIds
+     * @return void
+     * @throws Ess_M2ePro_Model_Exception
+     */
+    protected function deleteListingProducts($listingProductsIds)
+    {
         foreach ($listingProductsIds as $listingProductId) {
             try {
                 $listingProduct = Mage::helper('M2ePro/Component_Amazon')
@@ -440,18 +460,7 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
         $this->getListing()->setSetting('additional_data', 'adding_new_asin_listing_products_ids', array());
         $this->getListing()->setSetting('additional_data', 'auto_search_was_performed', 0);
         $this->getListing()->save();
-
-        $this->_redirect(
-            '*/adminhtml_amazon_listing_productAdd/index', array(
-                'step'   => 2,
-                'id'     => $this->getRequest()->getParam('id'),
-                'wizard' => $this->getRequest()->getParam('wizard')
-            )
-        );
-        return;
     }
-
-    //########################################
 
     public function getCategoriesJsonAction()
     {
@@ -469,6 +478,7 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
         );
         $treeBlock->setSelectedIds($selectedProductsIds);
 
+        $this->getResponse()->setHeader('Content-Type', 'application/json');
         $this->getResponse()->setBody(
             $treeBlock->getCategoryChildrenJson($this->getRequest()->getParam('category'))
         );
@@ -644,7 +654,6 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
         $listing->setData('general_id_custom_attribute', $post['general_id_custom_attribute']);
         $listing->setData('worldwide_id_mode', $post['worldwide_id_mode']);
         $listing->setData('worldwide_id_custom_attribute', $post['worldwide_id_custom_attribute']);
-        $listing->setData('search_by_magento_title_mode', $post['search_by_magento_title_mode']);
 
         $listing->save();
 
@@ -865,7 +874,7 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
 
         $this->_initAction();
 
-        $this->setPageHelpLink(null, null, "x/a_MVAg");
+        $this->setPageHelpLink(null, null, "asin-isbn-management#48fdfeea23a34d2bb56830135a4c1b43");
 
         $this->_addContent($block)->renderLayout();
     }
@@ -888,7 +897,7 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
 
         $this->_initAction();
 
-        $this->setPageHelpLink(null, null, "x/a_MVAg");
+        $this->setPageHelpLink(null, null, "asin-isbn-management#48fdfeea23a34d2bb56830135a4c1b43");
 
         $this->_addContent(
             $this->getLayout()->createBlock(
@@ -1031,6 +1040,26 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
                 '_current' => true,
                 'step'     => 4
             )
+        );
+    }
+
+    /**
+     * @return Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController|Mage_Adminhtml_Controller_Action
+     * @throws Ess_M2ePro_Model_Exception
+     * @throws Ess_M2ePro_Model_Exception_Logic
+     */
+    protected function exitToListingAction()
+    {
+        $listingId = $this->getRequest()->getParam('id');
+        if ($listingId === null) {
+            return $this->_redirect('*/adminhtml_amazon_listing/index');
+        }
+
+        $this->cancelProductsAdding();
+
+        return $this->_redirect(
+            '*/adminhtml_amazon_listing/view',
+            array('id' => $listingId)
         );
     }
 
@@ -1229,5 +1258,24 @@ class Ess_M2ePro_Adminhtml_Amazon_Listing_ProductAddController
         Mage::helper('M2ePro/Magento')->clearMenuCache();
     }
 
-    //########################################
+    /**
+     * @return void
+     * @throws Ess_M2ePro_Model_Exception
+     * @throws Ess_M2ePro_Model_Exception_Logic
+     */
+    protected function cancelProductsAdding()
+    {
+        $this->endWizard();
+
+        $additionalData = $this->getListing()->getSettings('additional_data');
+        $addingListingProductIds = isset($additionalData['adding_listing_products_ids']) ?
+            $additionalData['adding_listing_products_ids'] : array();
+
+        Mage::helper('M2ePro/Data_Session')->setValue('added_products_ids', array());
+        if (!empty($addingListingProductIds) && is_array($addingListingProductIds)) {
+            $this->deleteListingProducts($addingListingProductIds);
+        }
+
+        $this->clear();
+    }
 }

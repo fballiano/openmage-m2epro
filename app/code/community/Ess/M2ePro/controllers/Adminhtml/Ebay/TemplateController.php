@@ -28,7 +28,6 @@ class Ess_M2ePro_Adminhtml_Ebay_TemplateController extends Ess_M2ePro_Controller
             ->addJs('M2ePro/Ebay/Listing/Template/Switcher.js')
             ->addJs('M2ePro/Template/Edit.js')
             ->addJs('M2ePro/Ebay/Template/Edit.js')
-            ->addJs('M2ePro/Ebay/Template/Payment.js')
             ->addJs('M2ePro/Ebay/Template/Return.js')
             ->addJs('M2ePro/Ebay/Template/Shipping.js')
             ->addJs('M2ePro/Ebay/Template/Shipping/ExcludedLocations.js')
@@ -38,7 +37,7 @@ class Ess_M2ePro_Adminhtml_Ebay_TemplateController extends Ess_M2ePro_Controller
 
         $this->_initPopUp();
 
-        $this->setPageHelpLink(null, null, "x/z1oJAg");
+        $this->setPageHelpLink(null, null, "configuration");
 
         if (Mage::helper('M2ePro/Magento')->isTinyMceAvailable()) {
             $this->getLayout()->getBlock('head')->setCanLoadTinyMce(true);
@@ -122,27 +121,27 @@ class Ess_M2ePro_Adminhtml_Ebay_TemplateController extends Ess_M2ePro_Controller
 
         switch ($nick) {
             case Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_RETURN_POLICY:
-                $this->setPageHelpLink(null, null, "x/AlsJAg");
+                $this->setPageHelpLink(null, null, "set-up-return-policy");
                 break;
 
             case Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_PAYMENT:
-                $this->setPageHelpLink(null, null, "x/-FoJAg");
+                $this->setPageHelpLink(null, null, "set-up-payment-policy");
                 break;
 
             case Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_SHIPPING:
-                $this->setPageHelpLink(null, null, "x/aQAJAQ");
+                $this->setPageHelpLink(null, null, "set-up-shipping-policy#6e8b3db9007740e1a87f1d2a26209a10");
                 break;
 
             case Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_DESCRIPTION:
-                $this->setPageHelpLink(null, null, "x/3FoJAg");
+                $this->setPageHelpLink(null, null, "set-up-description-policy");
                 break;
 
             case Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_SELLING_FORMAT:
-                $this->setPageHelpLink(null, null, "x/21oJAg");
+                $this->setPageHelpLink(null, null, "set-up-selling-policy");
                 break;
 
             case Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_SYNCHRONIZATION:
-                $this->setPageHelpLink(null, null, "x/x1oJAg");
+                $this->setPageHelpLink(null, null, "set-up-synchronization-policy");
                 break;
         }
 

@@ -46,7 +46,6 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_ProductAddController
 
             ->addJs('M2ePro/TemplateManager.js')
             ->addJs('M2ePro/Ebay/Listing/Template/Switcher.js')
-            ->addJs('M2ePro/Ebay/Template/Payment.js')
             ->addJs('M2ePro/Ebay/Template/Return.js')
             ->addJs('M2ePro/Ebay/Template/Shipping.js')
             ->addJs('M2ePro/Ebay/Template/Shipping/ExcludedLocations.js')
@@ -70,7 +69,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_ProductAddController
 
         $this->_initPopUp();
 
-        $this->setPageHelpLink(null, null, "x/5loJAg");
+        $this->setPageHelpLink(null, null, "add-magento-products-manually");
 
         return $this;
     }
@@ -237,7 +236,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_ProductAddController
 
         $this->_initAction();
 
-        $this->setPageHelpLink(null, null, "x/5loJAg");
+        $this->setPageHelpLink(null, null, "add-magento-products-manually");
 
         $this->getLayout()->getBlock('head')
              ->setCanLoadExtJs(true)
@@ -281,6 +280,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_ProductAddController
         $treeBlock = $this->getLayout()->createBlock('M2ePro/adminhtml_ebay_listing_product_sourceCategories_tree');
         $treeBlock->setSelectedIds($selectedProductsIds);
 
+        $this->getResponse()->setHeader('Content-Type', 'application/json');
         $this->getResponse()->setBody(
             $treeBlock->getCategoryChildrenJson($this->getRequest()->getParam('category'))
         );

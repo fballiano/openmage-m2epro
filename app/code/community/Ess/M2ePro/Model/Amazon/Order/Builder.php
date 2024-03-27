@@ -15,7 +15,8 @@ class Ess_M2ePro_Model_Amazon_Order_Builder extends Mage_Core_Model_Abstract
     const STATUS_UPDATED      = 2;
 
     const UPDATE_STATUS = 'status';
-    const UPDATE_EMAIL  = 'email';
+    const UPDATE_EMAIL   = 'email';
+    const UPDATE_B2B_VAT = 'b2b_vat';
 
     /** @var $_helper Ess_M2ePro_Model_Amazon_Order_Helper */
     protected $_helper = null;
@@ -355,18 +356,6 @@ class Ess_M2ePro_Model_Amazon_Order_Builder extends Mage_Core_Model_Abstract
     //########################################
 
     /**
-     * @param ?Mage_Sales_Model_Order $magentoOrder
-     *
-     * @return bool
-     */
-    protected function isMagentoOrderUpdatable($magentoOrder)
-    {
-        return $magentoOrder !== null
-            && $magentoOrder->getState() !== Mage_Sales_Model_Order::STATE_CLOSED
-            && $magentoOrder->getState() !== Mage_Sales_Model_Order::STATE_CANCELED;
-    }
-
-    /**
      * @return bool
      */
     protected function isNew()
@@ -443,6 +432,10 @@ class Ess_M2ePro_Model_Amazon_Order_Builder extends Mage_Core_Model_Abstract
         if ($this->hasUpdatedEmail()) {
             $this->_updates[] = self::UPDATE_EMAIL;
         }
+
+        if ($this->hasUpdatedVat()) {
+            $this->_updates[] = self::UPDATE_B2B_VAT;
+        }
     }
 
     protected function hasUpdatedStatus()
@@ -470,6 +463,30 @@ class Ess_M2ePro_Model_Amazon_Order_Builder extends Mage_Core_Model_Abstract
         return filter_var($newEmail, FILTER_VALIDATE_EMAIL) !== false;
     }
 
+    protected function hasUpdatedVat()
+    {
+        if (!$this->isUpdated()) {
+            return false;
+        }
+
+        /** @var Ess_M2ePro_Model_Amazon_Order $amazonOrder */
+        $amazonOrder = $this->_order->getChildObject();
+        if (!$amazonOrder->isBusiness()) {
+            return false;
+        }
+
+        /** @var Ess_M2ePro_Helper_Data $dataHelper */
+        $dataHelper = Mage::helper('M2ePro');
+
+        $oldTaxDetails = $dataHelper->jsonDecode($amazonOrder->getData('tax_details'));
+        $oldTaxSum = (float)array_sum(array_values($oldTaxDetails));
+
+        $newTaxDetails = $dataHelper->jsonDecode($this->getData('tax_details'));
+        $newTaxSum = (float)array_sum(array_values($newTaxDetails));
+
+        return $newTaxSum !== $oldTaxSum;
+    }
+
     //########################################
 
     protected function hasUpdates()
@@ -484,11 +501,7 @@ class Ess_M2ePro_Model_Amazon_Order_Builder extends Mage_Core_Model_Abstract
 
     protected function processMagentoOrderUpdates()
     {
-        $magentoOrder = $this->_order->getMagentoOrder();
-        if (!$this->hasUpdates()
-            || $magentoOrder === null
-            || !$this->isMagentoOrderUpdatable($magentoOrder)
-        ) {
+        if (!$this->hasUpdates() || $this->_order->getMagentoOrder() === null) {
             return;
         }
 
@@ -500,7 +513,7 @@ class Ess_M2ePro_Model_Amazon_Order_Builder extends Mage_Core_Model_Abstract
 
         /** @var $magentoOrderUpdater Ess_M2ePro_Model_Magento_Order_Updater */
         $magentoOrderUpdater = Mage::getModel('M2ePro/Magento_Order_Updater');
-        $magentoOrderUpdater->setMagentoOrder($magentoOrder);
+        $magentoOrderUpdater->setMagentoOrder($this->_order->getMagentoOrder());
 
         if ($this->hasUpdate(self::UPDATE_STATUS)) {
             $this->_order->setStatusUpdateRequired(true);
@@ -515,6 +528,22 @@ class Ess_M2ePro_Model_Amazon_Order_Builder extends Mage_Core_Model_Abstract
 
         if ($this->hasUpdate(self::UPDATE_EMAIL)) {
             $magentoOrderUpdater->updateCustomerEmail($this->_order->getChildObject()->getBuyerEmail());
+        }
+
+        if ($this->hasUpdate(self::UPDATE_B2B_VAT)) {
+            /** @var Ess_M2ePro_Helper_Data $dataHelper */
+            $dataHelper = Mage::helper('M2ePro');
+
+            $this->_order->markAsVatChanged();
+            $message = 'Reverse charge (0% VAT) applied on Amazon';
+            $magentoOrderUpdater->updateComments(array($dataHelper->__($message)));
+            $this->_order->addInfoLog(
+                $message,
+                array(),
+                array(),
+                false,
+                array(\Ess_M2ePro_Model_Order::ADDITIONAL_DATA_KEY_VAT_REVERSE_CHARGE => true)
+            );
         }
 
         $magentoOrderUpdater->finishUpdate();
@@ -545,14 +574,9 @@ class Ess_M2ePro_Model_Amazon_Order_Builder extends Mage_Core_Model_Abstract
 
     private function addCommentsToMagentoOrder(Ess_M2ePro_Model_Order $order, $comments)
     {
-        $magentoOrder = $order->getMagentoOrder();
-        if (!$this->isMagentoOrderUpdatable($magentoOrder)) {
-            return;
-        }
-
         /** @var $magentoOrderUpdater Ess_M2ePro_Model_Magento_Order_Updater */
         $magentoOrderUpdater = Mage::getModel('M2ePro/Magento_Order_Updater');
-        $magentoOrderUpdater->setMagentoOrder($magentoOrder);
+        $magentoOrderUpdater->setMagentoOrder($order->getMagentoOrder());
         $magentoOrderUpdater->updateComments($comments);
         $magentoOrderUpdater->finishUpdate();
     }

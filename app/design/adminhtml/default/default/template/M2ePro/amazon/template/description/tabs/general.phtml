@@ -21,7 +21,7 @@
 
         In case you are planning to use Description Policy for New ASIN/ISBN Creation, you should enable New ASIN/ISBN Creation feature.<br/><br/>
         More detailed information about ability to work with this Page you can find <a href="%url%" target="_blank">here</a>.',
-        Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'x/vN0VAg')
+        Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'description-policies')
     ); ?>
 </div>
 
@@ -142,19 +142,6 @@
         <?php } ?>
 
         editForm = new varienForm('edit_form', '<?php echo $this->getValidationUrl(); ?>');
-
-        // chrome hack
-        refreshNewAsinAccepted = function() {
-            setTimeout(function() {
-                var tabContent = $('amazonTemplateDescriptionEditTabs_general_content');
-                if (!tabContent.visible()) {
-                    refreshWorldwideIdMode();
-                } else {
-                    $('new_asin_accepted').simulate('change');
-                }
-            }, 50);
-        };
-        refreshNewAsinAccepted();
     });
 
     //-----------------------------

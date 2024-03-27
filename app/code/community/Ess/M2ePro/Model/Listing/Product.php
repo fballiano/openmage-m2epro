@@ -39,6 +39,7 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
     const STATUS_UNKNOWN    = 5;
     const STATUS_BLOCKED    = 6;
     const STATUS_HIDDEN     = 7;
+    const STATUS_INACTIVE   = 8;
 
     const STATUS_CHANGER_UNKNOWN   = 0;
     const STATUS_CHANGER_SYNCH     = 1;
@@ -264,15 +265,22 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
      */
     public function getVariations($asObjects = false, array $filters = array())
     {
-        $storageKey = "listing_product_{$this->getId()}_variations_" .
-            sha1((string)$asObjects . Mage::helper('M2ePro')->jsonEncode($filters));
+        /** @var Ess_M2ePro_Helper_Data_Cache_Runtime $runtimeCache */
+        $runtimeCache = Mage::helper('M2ePro/Data_Cache_Runtime');
+        /** @var Ess_M2ePro_Helper_Data $dataHelper */
+        $dataHelper = Mage::helper('M2ePro');
+        /** @var Ess_M2ePro_Helper_Component $componentHelper */
+        $componentHelper = Mage::helper('M2ePro/Component');
 
-        if ($cacheData = Mage::helper('M2ePro/Data_Cache_Runtime')->getValue($storageKey)) {
+        $storageKey = "listing_product_{$this->getId()}_variations_" .
+            sha1((string)$asObjects . $dataHelper->jsonEncode($filters));
+
+        if ($cacheData = $runtimeCache->getValue($storageKey)) {
             return $cacheData;
         }
 
         /** @var Ess_M2ePro_Model_Resource_ActiveRecord_CollectionAbstract $collection */
-        $collection = Mage::helper('M2ePro/Component')->getComponentCollection(
+        $collection = $componentHelper->getComponentCollection(
             $this->getComponentMode(),
             'Listing_Product_Variation'
         );
@@ -294,7 +302,7 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
             $result = $result['items'];
         }
 
-        Mage::helper('M2ePro/Data_Cache_Runtime')->setValue(
+        $runtimeCache->setValue(
             $storageKey,
             $result,
             array(
@@ -448,6 +456,11 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
         return $this->getStatus() == self::STATUS_FINISHED;
     }
 
+    public function isInactive()
+    {
+        return $this->getStatus() == self::STATUS_INACTIVE;
+    }
+
     // ---------------------------------------
 
     /**
@@ -455,10 +468,16 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
      */
     public function isListable()
     {
-        return ($this->isNotListed() || $this->isSold() ||
-                $this->isStopped() || $this->isFinished() ||
-                $this->isHidden() || $this->isUnknown()) &&
-            !$this->isBlocked();
+        return !$this->isBlocked()
+            && (
+                $this->isNotListed()
+                || $this->isSold()
+                || $this->isStopped()
+                || $this->isFinished()
+                || $this->isHidden()
+                || $this->isUnknown()
+                || $this->isInactive()
+            );
     }
 
     /**
@@ -466,8 +485,14 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
      */
     public function isRelistable()
     {
-        return ($this->isSold() || $this->isStopped() || $this->isFinished() || $this->isUnknown()) &&
-            !$this->isBlocked();
+        return !$this->isBlocked()
+            && (
+                $this->isSold()
+                || $this->isStopped()
+                || $this->isFinished()
+                || $this->isUnknown()
+                || $this->isInactive()
+            );
     }
 
     /**
@@ -475,7 +500,12 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
      */
     public function isRevisable()
     {
-        return ($this->isListed() || $this->isHidden() || $this->isUnknown()) && !$this->isBlocked();
+        return !$this->isBlocked()
+            && (
+                $this->isListed()
+                || $this->isHidden()
+                || $this->isUnknown()
+            );
     }
 
     /**
@@ -483,7 +513,12 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
      */
     public function isStoppable()
     {
-        return ($this->isListed() || $this->isHidden() || $this->isUnknown()) && !$this->isBlocked();
+        return !$this->isBlocked()
+            && (
+                $this->isListed()
+                || $this->isHidden()
+                || $this->isUnknown()
+            );
     }
 
     //########################################

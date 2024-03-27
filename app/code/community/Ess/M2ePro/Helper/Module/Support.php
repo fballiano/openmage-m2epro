@@ -32,15 +32,19 @@ class Ess_M2ePro_Helper_Module_Support extends Mage_Core_Helper_Abstract
         return Mage::helper('M2ePro/Module')->getConfig()->getGroupValue('/support/', 'website_url');
     }
 
-    public function getClientsPortalUrl()
+    public function getPrivacyPolicyUrl()
     {
-        return Mage::helper('M2ePro/Module')->getConfig()->getGroupValue('/support/', 'clients_portal_url');
+        return $this->getWebsiteUrl() . 'privacy';
     }
 
-    public function getClientsPortalDocumentationUrl()
+    public function getTermsAndConditionsUrl()
     {
-        return Mage::helper('M2ePro/Module')->getConfig()
-                ->getGroupValue('/support/', 'clients_portal_url') . 'documentation/';
+        return $this->getWebsiteUrl() . 'terms-and-conditions';
+    }
+
+    public function getAccountsUrl()
+    {
+        return Mage::helper('M2ePro/Module')->getConfig()->getGroupValue('/support/', 'accounts_url');
     }
 
     public function getDocumentationUrl($component = null, $articleUrl = null, $tinyLink = null)

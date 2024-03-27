@@ -52,7 +52,13 @@ class Ess_M2ePro_Model_Cron_Task_Walmart_Order_Receive
             /** @var $account Ess_M2ePro_Model_Account **/
 
             try {
-                $responseData = $this->receiveWalmartOrdersData($account);
+                if ($this->isCanada($account)) {
+                    $responseData = $this->receiveWalmartOrdersDataByCreateDate($account);
+                    $lastSynchronizationDate = $responseData['to_create_date'];
+                } else {
+                    $responseData = $this->receiveWalmartOrdersDataByUpdateDate($account);
+                    $lastSynchronizationDate = $responseData['to_update_date'];
+                }
                 if (empty($responseData)) {
                     continue;
                 }
@@ -60,7 +66,7 @@ class Ess_M2ePro_Model_Cron_Task_Walmart_Order_Receive
                 $processedWalmartOrders = $ordersCreator->processWalmartOrders($account, $responseData['items']);
                 $ordersCreator->processMagentoOrders($processedWalmartOrders);
 
-                $account->getChildObject()->setData('orders_last_synchronization', $responseData['to_create_date']);
+                $account->getChildObject()->setData('orders_last_synchronization', $lastSynchronizationDate);
                 $account->getChildObject()->save();
             } catch (Exception $exception) {
                 $message = Mage::helper('M2ePro')->__(
@@ -81,10 +87,88 @@ class Ess_M2ePro_Model_Cron_Task_Walmart_Order_Receive
      * @return array|null
      * @throws Exception
      */
-    protected function receiveWalmartOrdersData(Ess_M2ePro_Model_Account $account)
+    protected function receiveWalmartOrdersDataByUpdateDate(Ess_M2ePro_Model_Account $account)
+    {
+        $lastFromDate = $account->getData('orders_last_synchronization');
+        if (!empty($lastFromDate)) {
+            $fromDate = new DateTime($lastFromDate, new DateTimeZone('UTC'));
+        } else {
+            $fromDate = new DateTime('now', new DateTimeZone('UTC'));
+            $fromDate->modify('-1 day');
+        }
+
+        $toDate = new DateTime('now', new DateTimeZone('UTC'));
+
+        // ----------------------------------------
+
+        if ($fromDate >= $toDate) {
+            $fromDate = clone $toDate;
+            $fromDate->modify('-5 minutes');
+        }
+
+        // ----------------------------------------
+
+        /** @var Ess_M2ePro_Model_Walmart_Connector_Dispatcher $dispatcherObject */
+        $dispatcherObject = Mage::getModel('M2ePro/Walmart_Connector_Dispatcher');
+
+        // -------------------------------------
+
+        $connectorObj = $dispatcherObject->getVirtualConnector(
+            'orders',
+            'get',
+            'items',
+            array(
+                'account'          => $account->getData('server_hash'),
+                'from_update_date' => $fromDate->format('Y-m-d H:i:s'),
+                'to_update_date'   => $toDate->format('Y-m-d H:i:s')
+            )
+        );
+        $dispatcherObject->process($connectorObj);
+
+        // ----------------------------------------
+
+        $this->processResponseMessages($connectorObj->getResponseMessages());
+
+        // ----------------------------------------
+
+        $responseData = $connectorObj->getResponseData();
+        if (!isset($responseData['items'])) {
+            Mage::helper('M2ePro/Module_Logger')->process(
+                array(
+                    'from_update_date'  => $fromDate->format('Y-m-d H:i:s'),
+                    'to_update_date'    => $toDate->format('Y-m-d H:i:s'),
+                    'account_id'        => $account->getId(),
+                    'response_data'     => $responseData,
+                    'response_messages' => $connectorObj->getResponseMessages()
+                ),
+                'Walmart orders receive task - empty response'
+            );
+
+            return array();
+        }
+
+        // ----------------------------------------
+
+        return array(
+            'items'          => $responseData['items'],
+            'to_create_date' => isset($responseData['to_create_date'])
+                ? $responseData['to_create_date']
+                : $toDate->format('Y-m-d H:i:s'),
+            'to_update_date' => count($responseData['items']) > 0
+                ? $responseData['to_update_date']
+                : $toDate->format('Y-m-d H:i:s'),
+        );
+    }
+
+    /**
+     * @param Ess_M2ePro_Model_Account $account
+     * @return array|null
+     * @throws Exception
+     */
+    private function receiveWalmartOrdersDataByCreateDate(Ess_M2ePro_Model_Account $account)
     {
         $fromDate = $this->prepareFromDate($account->getData('orders_last_synchronization'));
-        $toDate = $this->prepareToDate();
+        $toDate = new DateTime('now', new DateTimeZone('UTC'));
 
         // ----------------------------------------
 
@@ -104,7 +188,9 @@ class Ess_M2ePro_Model_Cron_Task_Walmart_Order_Receive
 
         do {
             $connectorObj = $dispatcherObject->getVirtualConnector(
-                'orders', 'get', 'items',
+                'orders',
+                'get',
+                'items',
                 array(
                     'account'          => $account->getData('server_hash'),
                     'from_create_date' => $fromDate->format('Y-m-d H:i:s'),
@@ -120,7 +206,7 @@ class Ess_M2ePro_Model_Cron_Task_Walmart_Order_Receive
             // ----------------------------------------
 
             $responseData = $connectorObj->getResponseData();
-            if (!isset($responseData['items']) || !isset($responseData['to_create_date'])) {
+            if (!isset($responseData['items'])) {
                 Mage::helper('M2ePro/Module_Logger')->process(
                     array(
                         'from_create_date'  => $fromDate->format('Y-m-d H:i:s'),
@@ -179,45 +265,6 @@ class Ess_M2ePro_Model_Cron_Task_Walmart_Order_Receive
         }
     }
 
-    //########################################
-
-    /**
-     * @param DateTime $minPurchaseDateTime
-     * @return DateTime|null
-     * @throws Exception
-     */
-    protected function getMinPurchaseDateTime(DateTime $minPurchaseDateTime)
-    {
-        /** @var Ess_M2ePro_Model_Resource_Order_Collection $collection */
-        $collection = Mage::helper('M2ePro/Component_Walmart')->getCollection('Order');
-        $collection->addFieldToFilter(
-            'status',
-            array(
-                'from' => Ess_M2ePro_Model_Walmart_Order::STATUS_CREATED,
-                'to'   => Ess_M2ePro_Model_Walmart_Order::STATUS_SHIPPED_PARTIALLY
-            )
-        );
-        $collection->addFieldToFilter(
-            'purchase_create_date',
-            array('from' => $minPurchaseDateTime->format('Y-m-d H:i:s'))
-        );
-        $collection->getSelect()->limit(1);
-
-        /** @var Ess_M2ePro_Model_Order $order */
-        $order = $collection->getFirstItem();
-        if ($order->getId() === null) {
-            return null;
-        }
-
-        $purchaseDateTime = new DateTime(
-            $order->getChildObject()->getPurchaseCreateDate(),
-            new DateTimeZone('UTC')
-        );
-        $purchaseDateTime->modify('-1 second');
-
-        return $purchaseDateTime;
-    }
-
     //####################################
 
     /**
@@ -266,16 +313,44 @@ class Ess_M2ePro_Model_Cron_Task_Walmart_Order_Receive
     }
 
     /**
-     * @return DateTime
+     * @param DateTime $minPurchaseDateTime
+     * @return DateTime|null
      * @throws Exception
      */
-    protected function prepareToDate()
+    protected function getMinPurchaseDateTime(DateTime $minPurchaseDateTime)
     {
-        $operationHistory = $this->getOperationHistory()->getParentObject('cron_runner');
-        $toDate = $operationHistory !== null ? $operationHistory->getData('start_date') : 'now';
+        /** @var Ess_M2ePro_Model_Resource_Order_Collection $collection */
+        $collection = Mage::helper('M2ePro/Component_Walmart')->getCollection('Order');
+        $collection->addFieldToFilter(
+            'status',
+            array(
+                'from' => Ess_M2ePro_Model_Walmart_Order::STATUS_CREATED,
+                'to'   => Ess_M2ePro_Model_Walmart_Order::STATUS_SHIPPED_PARTIALLY
+            )
+        );
+        $collection->addFieldToFilter(
+            'purchase_create_date',
+            array('from' => $minPurchaseDateTime->format('Y-m-d H:i:s'))
+        );
+        $collection->getSelect()->limit(1);
 
-        return new DateTime($toDate, new DateTimeZone('UTC'));
+        /** @var Ess_M2ePro_Model_Order $order */
+        $order = $collection->getFirstItem();
+        if ($order->getId() === null) {
+            return null;
+        }
+
+        $purchaseDateTime = new DateTime(
+            $order->getChildObject()->getPurchaseCreateDate(),
+            new DateTimeZone('UTC')
+        );
+        $purchaseDateTime->modify('-1 second');
+
+        return $purchaseDateTime;
     }
 
-    //########################################
+    private function isCanada(Ess_M2ePro_Model_Account $account)
+    {
+        return $account->getChildObject()->getMarketplace()->getCode() === 'CA';
+    }
 }

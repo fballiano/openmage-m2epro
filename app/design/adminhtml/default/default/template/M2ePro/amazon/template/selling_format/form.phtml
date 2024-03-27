@@ -37,7 +37,7 @@
 
         <strong>Note:</strong> Attributes must contain only Numeric Values.<br/><br/>
         More detailed information about ability to work with this Page you can find <a href="%url%" target="_blank">here</a>.',
-        Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'x/mt0VAg')); ?>
+        Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'selling-policies')); ?>
 </div>
 
 <?php
@@ -193,6 +193,12 @@
         if ($('regular_map_price_mode')) {
             $('regular_map_price_mode')
                 .observe('change', AmazonTemplateSellingFormatObj.regular_map_price_mode_change)
+                .simulate('change');
+        }
+
+        if ($('regular_list_price_mode')) {
+            $('regular_list_price_mode')
+                .observe('change', AmazonTemplateSellingFormatObj.regular_list_price_mode_change)
                 .simulate('change');
         }
 
@@ -535,7 +541,7 @@
                             <option value="<?php echo Ess_M2ePro_Model_Amazon_Template_SellingFormat::PRICE_VARIATION_MODE_CHILDREN; ?>" <?php if (Ess_M2ePro_Model_Amazon_Template_SellingFormat::PRICE_VARIATION_MODE_CHILDREN == $formData['regular_price_variation_mode']): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Associated Products'); ?></option>
                         </select>
                         <p class="note">
-                            <span><?php echo Mage::helper('M2ePro')->__('Determines where the Price for Configurable and Bundle Products Options should be taken from.'); ?></span>
+                            <span><?php echo Mage::helper('M2ePro')->__('Choose the Magento Product Attribute to use for the Price for Configurable and Bundle Products Options.'); ?></span>
                         </p>
                     </td>
                 </tr>
@@ -562,6 +568,32 @@
                         </select>
                         <p class="note">
                             <?php echo Mage::helper('M2ePro')->__('The Selling Price for your Product will not be displayed on the Product Detail Page or Offer Listing Page if it is less than the Minimum Advertised Price. The Customer only sees the Price you\'re selling the Item for if they add the Item to their Shopping Cart.') ?>
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="label">
+                        <label><?php echo Mage::helper('M2ePro')->__('List Price Attribute'); ?>:</label>
+                    </td>
+                    <td class="value">
+                        <input type="hidden" id="regular_list_price_custom_attribute" name="regular_list_price_custom_attribute" value="<?php echo $formData['regular_list_price_custom_attribute']; ?>" />
+
+                        <select id="regular_list_price_mode" name="regular_list_price_mode" class="select M2ePro-custom-attribute-can-be-created" allowed_attribute_types="text,select">
+                            <option value="<?php echo Ess_M2ePro_Model_Amazon_Template_SellingFormat::LIST_PRICE_MODE_NONE; ?>" <?php if ($formData['regular_list_price_mode'] == Ess_M2ePro_Model_Amazon_Template_SellingFormat::LIST_PRICE_MODE_NONE): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('None'); ?></option>
+                            <optgroup class="M2ePro-custom-attribute-optgroup" label="Magento Attribute">
+                                <?php echo $this->getForceAddedAttributeOptionHtml($formData['regular_list_price_custom_attribute'], $attributesByInputTypes['text_price'], Ess_M2ePro_Model_Amazon_Template_SellingFormat::LIST_PRICE_MODE_ATTRIBUTE); ?>
+                                <?php foreach($attributesByInputTypes['text_price'] as $attribute) : ?>
+                                    <option attribute_code="<?php echo $attribute['code']; ?>" value="<?php echo Ess_M2ePro_Model_Amazon_Template_SellingFormat::LIST_PRICE_MODE_ATTRIBUTE; ?>" <?php if ($attribute['code'] == $formData['regular_list_price_custom_attribute']): ?>selected="selected"<?php endif; ?>>
+                                        <?php echo Mage::helper('M2ePro')->escapeHtml($attribute['label']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                        </select>
+                        <p class="note">
+                            <span><?php echo Mage::helper('M2ePro')->__('Provide the list price for the product not including tax.
+                List Price is the suggested retail price of a product as provided by a manufacturer,
+                supplier, or seller. This is not the offering or cost price.'); ?></span>
                         </p>
                     </td>
                 </tr>
@@ -799,7 +831,7 @@ HTML
                                 <option value="<?php echo Ess_M2ePro_Model_Amazon_Template_SellingFormat::PRICE_VARIATION_MODE_CHILDREN; ?>" <?php if (Ess_M2ePro_Model_Amazon_Template_SellingFormat::PRICE_VARIATION_MODE_CHILDREN == $formData['business_price_variation_mode']): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Associated Products'); ?></option>
                             </select>
                             <p class="note">
-                                <span><?php echo Mage::helper('M2ePro')->__('Determines where the Price for Configurable and Bundle Products Options should be taken from.'); ?></span>
+                                <span><?php echo Mage::helper('M2ePro')->__('Choose the Magento Product Attribute to use for the Price for Configurable and Bundle Products Options.'); ?></span>
                             </p>
                         </td>
                     </tr>
@@ -870,7 +902,7 @@ HTML
                                     <strong>Example</strong>: for purchased Products with QTY >= 5 you set the Price = 7£ and Price Change = -2,25.
                                     Business Buyers will see the next record once they click ‘Request a quantity discount’: QTY >= 5, price 4,75 £, where: QTY <= 5 is the number of purchased Products
                                     to which the Discount will be applied, price 4,75 £ is the final Price per Product with the Discount applied (7£ - 2,25).<br /><br />',
-                                    Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'x/8oZP')
+                                    Mage::helper('M2ePro/Module_Support')->getSupportUrl('/support/solutions/articles/9000228205')
                                 ) ?>
                             </p>
                         </td>

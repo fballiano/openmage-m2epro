@@ -43,8 +43,8 @@ class Ess_M2ePro_Model_Ebay_Order_Builder extends Mage_Core_Model_Abstract
     protected $_status = self::STATUS_NOT_MODIFIED;
 
     protected $_updates = array();
-
-    //########################################
+    /** @var array<array{type:string, text:string}> */
+    protected $_messages = array();
 
     public function __construct()
     {
@@ -90,6 +90,22 @@ class Ess_M2ePro_Model_Ebay_Order_Builder extends Mage_Core_Model_Abstract
         $this->setData('saved_amount', (float)$data['selling']['saved_amount']);
         $this->setData('currency', $data['selling']['currency']);
         $this->setData('tax_reference', $data['selling']['tax_reference']);
+
+        if (!empty($data['messages']) && is_array($data['messages'])) {
+            foreach ($data['messages'] as $message) {
+                if (
+                    empty($message['text'])
+                    || empty($message['type'])
+                ) {
+                    continue;
+                }
+
+                $this->_messages[] = array(
+                    'text' => $message['text'],
+                    'type' => $message['type'],
+                );
+            }
+        }
 
         if (empty($data['selling']['tax_details']) || !is_array($data['selling']['tax_details'])) {
             $this->setData('tax_details', null);
@@ -315,11 +331,7 @@ class Ess_M2ePro_Model_Ebay_Order_Builder extends Mage_Core_Model_Abstract
         $finalFee = $this->_order->getChildObject()->getFinalFee();
         $magentoOrder = $this->_order->getMagentoOrder();
 
-        if (!empty($finalFee)
-            && !empty($magentoOrder)
-            && $magentoOrder->getPayment()
-            && $this->isMagentoOrderUpdatable($magentoOrder)
-        ) {
+        if (!empty($finalFee) && !empty($magentoOrder) && $magentoOrder->getPayment()) {
             $paymentAdditionalData = Mage::helper('M2ePro')->unserialize(
                 $magentoOrder->getPayment()->getAdditionalData()
             );
@@ -464,9 +476,18 @@ class Ess_M2ePro_Model_Ebay_Order_Builder extends Mage_Core_Model_Abstract
                 new DateTimeZone('UTC')
             );
 
-            if ($newPurchaseUpdateDate <= $oldPurchaseUpdateDate) {
+            if ($newPurchaseUpdateDate < $oldPurchaseUpdateDate) {
                 return false;
             }
+        }
+
+        /**
+         * Don't create combined order without payment
+         */
+        if ($this->isCombined()
+            && $this->getData('payment_status') === Ess_M2ePro_Model_Ebay_Order::PAYMENT_STATUS_NOT_SELECTED
+        ) {
+            return false;
         }
 
         if ($this->getData('order_status') == OrderHelper::EBAY_ORDER_STATUS_CANCELLED &&
@@ -500,18 +521,6 @@ class Ess_M2ePro_Model_Ebay_Order_Builder extends Mage_Core_Model_Abstract
     }
 
     /**
-     * @param ?Mage_Sales_Model_Order $magentoOrder
-     *
-     * @return bool
-     */
-    protected function isMagentoOrderUpdatable($magentoOrder)
-    {
-        return $magentoOrder !== null
-            && $magentoOrder->getState() !== Mage_Sales_Model_Order::STATE_CLOSED
-            && $magentoOrder->getState() !== Mage_Sales_Model_Order::STATE_CANCELED;
-    }
-
-    /**
      * @throws Ess_M2ePro_Model_Exception_Logic
      */
     protected function createOrUpdateOrder()
@@ -530,6 +539,23 @@ class Ess_M2ePro_Model_Ebay_Order_Builder extends Mage_Core_Model_Abstract
             }
         }
 
+        if (
+            $this->_order->getId()
+            && !empty($this->_messages)
+        ) {
+            $orderLog = $this->_order->getLog();
+
+            foreach ($this->_messages as $message) {
+                $orderLog->addMessage(
+                    $this->_order,
+                    $message['text'],
+                    $orderLog->convertServerMessageTypeToExtensionMessageType($message['type']),
+                    array(),
+                    true
+                );
+            }
+        }
+
         $this->_order->setAccount($this->_account);
 
         if ($this->getData('order_status') == OrderHelper::EBAY_ORDER_STATUS_CANCELLED) {
@@ -537,11 +563,7 @@ class Ess_M2ePro_Model_Ebay_Order_Builder extends Mage_Core_Model_Abstract
                 $this->_order->getReserve()->cancel();
             }
 
-            $magentoOrder = $this->_order->getMagentoOrder();
-            if ($magentoOrder !== null
-                && !$magentoOrder->isCanceled()
-                && $this->isMagentoOrderUpdatable($magentoOrder)
-            ) {
+            if ($this->_order->getMagentoOrder() !== null && !$this->_order->getMagentoOrder()->isCanceled()) {
                 $this->_order->cancelMagentoOrder();
             }
         }
@@ -974,7 +996,7 @@ class Ess_M2ePro_Model_Ebay_Order_Builder extends Mage_Core_Model_Abstract
         }
 
         $magentoOrder = $this->_order->getMagentoOrder();
-        if ($magentoOrder === null || !$this->isMagentoOrderUpdatable($magentoOrder)) {
+        if ($magentoOrder === null) {
             return;
         }
 
@@ -1004,6 +1026,4 @@ class Ess_M2ePro_Model_Ebay_Order_Builder extends Mage_Core_Model_Abstract
 
         $magentoOrderUpdater->finishUpdate();
     }
-
-    //########################################
 }

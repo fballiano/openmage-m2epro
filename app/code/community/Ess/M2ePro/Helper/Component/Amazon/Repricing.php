@@ -13,23 +13,8 @@ class Ess_M2ePro_Helper_Component_Amazon_Repricing extends Mage_Core_Helper_Abst
     const COMMAND_SYNCHRONIZE              = 'synchronize';
     const COMMAND_SYNCHRONIZE_USER_CHANGES = 'synchronize/userChanges';
     const COMMAND_GOTO_SERVICE             = 'goto_service';
-    const COMMAND_OFFERS_ADD               = 'offers/add';
-    const COMMAND_OFFERS_DETAILS           = 'offers/details';
-    const COMMAND_OFFERS_EDIT              = 'offers/edit';
-    const COMMAND_OFFERS_REMOVE            = 'offers/remove';
-    const COMMAND_DATA_SET_REQUEST         = 'data/setRequest';
-    const COMMAND_DATA_GET_RESPONSE        = 'data/getResponse';
 
     const REQUEST_TIMEOUT = 300;
-
-    //########################################
-
-    public function isEnabled()
-    {
-        return (bool)Mage::helper('M2ePro/Module')->getConfig()->getGroupValue('/amazon/repricing/', 'mode');
-    }
-
-    //########################################
 
     public function sendRequest($command, array $postData)
     {
@@ -59,6 +44,9 @@ class Ess_M2ePro_Helper_Component_Amazon_Repricing extends Mage_Core_Helper_Abst
         curl_setopt($curlObject, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curlObject, CURLOPT_CONNECTTIMEOUT, 15);
         curl_setopt($curlObject, CURLOPT_TIMEOUT, self::REQUEST_TIMEOUT);
+
+        curl_setopt($curlObject, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curlObject, CURLOPT_POSTREDIR, 1);
 
         $response = curl_exec($curlObject);
 
@@ -104,8 +92,6 @@ class Ess_M2ePro_Helper_Component_Amazon_Repricing extends Mage_Core_Helper_Abst
         return rtrim($baseUrl, '/').'/';
     }
 
-    //########################################
-
     public function prepareActionUrl($command, $serverRequestToken)
     {
         return $this->getBaseUrl().$command.'?'.http_build_query(array('request_token' => $serverRequestToken));
@@ -120,11 +106,9 @@ class Ess_M2ePro_Helper_Component_Amazon_Repricing extends Mage_Core_Helper_Abst
         }
 
         return $this->getBaseUrl().self::COMMAND_GOTO_SERVICE.'?'.http_build_query(
-            array(
-            'account_token' => $amazonAccount->getRepricing()->getToken()
-            )
-        );
+                array(
+                    'account_token' => $amazonAccount->getRepricing()->getToken()
+                )
+            );
     }
-
-    //########################################
 }

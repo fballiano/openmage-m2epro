@@ -37,7 +37,7 @@
         <?php if($isEdit): ?>
             <?php echo Mage::helper('M2ePro')->__(
                 'Under this section, you can link your Walmart account to M2E Pro. Read how to <a href="%url%" target="_blank">get the API credentials</a>.',
-                Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'x/KOhaAg')
+                Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'account-configuration')
             ); ?>
         <?php else: ?>
             <?php echo Mage::helper('M2ePro')->__(
@@ -45,7 +45,7 @@
                 Read how to <a href="%url%" target="_blank">get the API credentials</a> or register on 
                 <a href="https://marketplace-apply.walmart.com/apply?id=00161000012XSxe" target="_blank">Walmart US</a> / 
                 <a href="https://marketplace.walmart.ca/apply?q=ca" target="_blank">Walmart CA</a>.',
-                Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'x/KOhaAg')
+                Mage::helper('M2ePro/Module_Support')->getDocumentationUrl(null, null, 'account-configuration')
             ); ?>
         <?php endif; ?>
     </div>
@@ -68,12 +68,20 @@
     )); ?>);
 
     M2ePro.translator.add(<?php echo json_encode(array(
-        'Be attentive! By Deleting Account you delete all information on it from M2E Pro Server. This will cause inappropriate work of all Accounts\' copies.' => Mage::helper('M2ePro')->__('Be attentive! By Deleting Account you delete all information on it from M2E Pro Server. This will cause inappropriate work of all Accounts\' copies.'),
         'Please enter correct value.' => Mage::helper('M2ePro')->__('Please enter correct value.'),
         'Coefficient is not valid.' => Mage::helper('M2ePro')->__('Coefficient is not valid.'),
-        'on_delete_account_message' => Mage::helper('M2ePro')->__('Attention! By applying this action you delete the Account data only from current M2E Pro instance. It does not affect the Subscription status and Billing process for this Channel Account. <br><br>
-                                                                   To delete Channel Account which you don\'t need to manage under M2E Pro Subscription Plan, go to the <a href="%url%" target="_blank">Clients Portal</a>.',
-                                                                   Mage::helper('M2ePro/Module_Support')->getClientsPortalUrl())
+        'on_delete_account_message' => Mage::helper('M2ePro')->__(
+            <<<HTML
+<p>You are about to delete your eBay/Amazon/Walmart seller account from M2E Pro. This will remove the
+account-related Listings and Products from the extension and disconnect the synchronization.
+Your listings on the channel will <b>not</b> be affected.</p>
+<p>Please confirm if you would like to delete the account.</p>
+<p>Note: once the account is no longer connected to your M2E Pro, please remember to delete it from
+<a href="%url%">M2E Accounts</a></p>
+HTML
+            ,
+            Mage::helper('M2ePro/Module_Support')->getAccountsUrl()
+        )
     )); ?>);
 
     M2ePro.formData.id = '<?php echo $this->getRequest()->getParam('id'); ?>';

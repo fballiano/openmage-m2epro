@@ -54,10 +54,6 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Action_Type_Revise_Response
 
         $this->updateVariationsValues(true);
         $this->updateEbayItem();
-
-        if ($this->getEbayAccount()->isPickupStoreEnabled() && $this->getConfigurator()->isVariationsAllowed()) {
-            $this->runAccountPickupStoreStateUpdater();
-        }
     }
 
     public function processAlreadyStopped(array $response, array $responseParams = array())
@@ -65,7 +61,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Action_Type_Revise_Response
         $responseParams['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_COMPONENT;
 
         $data = array(
-            'status' => Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED
+            'status' => Ess_M2ePro_Model_Listing_Product::STATUS_INACTIVE
         );
 
         $data = $this->appendStatusChangerValue($data, $responseParams);

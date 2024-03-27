@@ -17,9 +17,7 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_account')}` (
   `mode` TINYINT(2) UNSIGNED NOT NULL,
   `server_hash` VARCHAR(255) NOT NULL,
   `user_id` VARCHAR(255) NOT NULL,
-  `token_session` VARCHAR(255) NOT NULL,
-  `token_expired_date` DATETIME NOT NULL,
-  `sell_api_token_session` VARCHAR(255) DEFAULT NULL,
+  `is_token_exist` TINYINT(2) NOT NULL DEFAULT 0,
   `sell_api_token_expired_date` DATETIME DEFAULT NULL,
   `marketplaces_data` TEXT DEFAULT NULL,
   `inventory_last_synchronization` DATETIME DEFAULT NULL,
@@ -64,91 +62,6 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_account_store_category')
   INDEX `parent_id` (`parent_id`),
   INDEX `sorder` (`sorder`),
   INDEX `title` (`title`)
-)
-ENGINE = INNODB
-CHARACTER SET utf8
-COLLATE utf8_general_ci;
-
-DROP TABLE IF EXISTS `{$this->_installer->getTable('m2epro_ebay_account_pickup_store')}`;
-CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_account_pickup_store')}` (
-  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(255) NOT NULL,
-  `location_id` VARCHAR(255) DEFAULT NULL,
-  `account_id` INT(11) UNSIGNED NOT NULL,
-  `marketplace_id` INT(11) UNSIGNED NOT NULL,
-  `phone` VARCHAR(255) NOT NULL,
-  `postal_code` VARCHAR(50) NOT NULL,
-  `url` VARCHAR(255) NOT NULL,
-  `utc_offset` VARCHAR(50) NOT NULL ,
-  `country` VARCHAR(255) NOT NULL,
-  `region` VARCHAR(255) NOT NULL,
-  `city` VARCHAR(255) NOT NULL,
-  `address_1` VARCHAR(255) NOT NULL,
-  `address_2` VARCHAR(255) NOT NULL,
-  `latitude` FLOAT,
-  `longitude` FLOAT,
-  `business_hours` TEXT NOT NULL,
-  `special_hours` TEXT NOT NULL,
-  `pickup_instruction` TEXT NOT NULL,
-  `qty_mode` TINYINT(2) UNSIGNED NOT NULL,
-  `qty_custom_value` INT(11) UNSIGNED NOT NULL,
-  `qty_custom_attribute` VARCHAR(255) NOT NULL,
-  `qty_percentage` INT(11) UNSIGNED NOT NULL DEFAULT 100,
-  `qty_modification_mode` TINYINT(2) UNSIGNED NOT NULL,
-  `qty_min_posted_value` int(11) UNSIGNED DEFAULT NULL,
-  `qty_max_posted_value` int(11) UNSIGNED DEFAULT NULL,
-  `update_date` DATETIME DEFAULT NULL,
-  `create_date` DATETIME DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `name` (`name`),
-  INDEX `location_id` (`location_id`),
-  INDEX `account_id` (`account_id`),
-  INDEX `marketplace_id` (`marketplace_id`)
-)
-ENGINE = INNODB
-CHARACTER SET utf8
-COLLATE utf8_general_ci;
-
-DROP TABLE IF EXISTS `{$this->_installer->getTable('m2epro_ebay_account_pickup_store_state')}`;
-CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_account_pickup_store_state')}` (
-  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `account_pickup_store_id` INT(11) UNSIGNED NOT NULL,
-  `is_in_processing` TINYINT(2) UNSIGNED DEFAULT 0,
-  `sku` VARCHAR(255) NOT NULL,
-  `online_qty` INT(11) NOT NULL,
-  `target_qty` INT(11) NOT NULL,
-  `is_added` TINYINT(2) NOT NULL DEFAULT 0,
-  `is_deleted` TINYINT(2) NOT NULL DEFAULT 0,
-  `update_date` DATETIME DEFAULT NULL,
-  `create_date` DATETIME DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `account_pickup_store_id` (`account_pickup_store_id`),
-  INDEX `is_in_processing` (`is_in_processing`),
-  INDEX `sku` (`sku`)
-)
-ENGINE = INNODB
-CHARACTER SET utf8
-COLLATE utf8_general_ci;
-
-DROP TABLE IF EXISTS `{$this->_installer->getTable('m2epro_ebay_account_pickup_store_log')}`;
-CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_account_pickup_store_log')}` (
-  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `account_pickup_store_state_id` INT(11) UNSIGNED DEFAULT NULL,
-  `location_id` VARCHAR(255) NOT NULL,
-  `location_title` VARCHAR(255) DEFAULT NULL,
-  `action_id` INT(11) UNSIGNED NOT NULL,
-  `action` TINYINT(2) UNSIGNED NOT NULL DEFAULT 1,
-  `type` TINYINT(2) UNSIGNED NOT NULL DEFAULT 1,
-  `description` TEXT DEFAULT NULL,
-  `create_date` DATETIME DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `account_pickup_store_state_id` (`account_pickup_store_state_id`),
-  INDEX `location_id` (`location_id`),
-  INDEX `location_title` (`location_title`),
-  INDEX `action` (`action`),
-  INDEX `action_id` (`action_id`),
-  INDEX `type` (`type`),
-  INDEX `create_date` (`create_date`)
 )
 ENGINE = INNODB
 CHARACTER SET utf8
@@ -309,7 +222,7 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_listing')}` (
   `template_description_id` INT(11) UNSIGNED DEFAULT NULL,
   `template_selling_format_id` INT(11) UNSIGNED DEFAULT NULL,
   `template_synchronization_id` INT(11) UNSIGNED DEFAULT NULL,
-  `product_add_ids` TEXT DEFAULT NULL,
+  `product_add_ids` LONGTEXT DEFAULT NULL,
   `parts_compatibility_mode` VARCHAR(10) DEFAULT NULL,
   PRIMARY KEY (`listing_id`),
   INDEX `auto_global_adding_template_category_id` (`auto_global_adding_template_category_id`),
@@ -467,21 +380,6 @@ ENGINE = INNODB
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-DROP TABLE IF EXISTS `{$this->_installer->getTable('m2epro_ebay_listing_product_pickup_store')}`;
-CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_listing_product_pickup_store')}` (
-  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_product_id` INT(11) UNSIGNED,
-  `account_pickup_store_id` INT(11) UNSIGNED,
-  `is_process_required` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  INDEX `listing_product_id` (`listing_product_id`),
-  INDEX `account_pickup_store_id` (`account_pickup_store_id`),
-  INDEX `is_process_required` (`is_process_required`)
-)
-ENGINE = INNODB
-CHARACTER SET utf8
-COLLATE utf8_general_ci;
-
 DROP TABLE IF EXISTS `{$this->_installer->getTable('m2epro_ebay_listing_product_variation')}`;
 CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_listing_product_variation')}` (
   `listing_product_variation_id` INT(11) UNSIGNED NOT NULL,
@@ -566,16 +464,13 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_marketplace')}` (
   `is_english_measurement_system` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `is_metric_measurement_system` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `is_managed_payments` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
-  `is_cash_on_delivery` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `is_global_shipping_program` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `is_charity` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
-  `is_in_store_pickup` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `is_return_description` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `is_epid` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `is_ktype` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (`marketplace_id`),
   INDEX `is_calculated_shipping` (`is_calculated_shipping`),
-  INDEX `is_cash_on_delivery` (`is_cash_on_delivery`),
   INDEX `is_managed_payments` (`is_managed_payments`),
   INDEX `is_charity` (`is_charity`),
   INDEX `is_english_measurement_system` (`is_english_measurement_system`),
@@ -588,7 +483,6 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_marketplace')}` (
   INDEX `is_stp` (`is_stp`),
   INDEX `is_stp_advanced` (`is_stp_advanced`),
   INDEX `is_map` (`is_map`),
-  INDEX `is_in_store_pickup` (`is_in_store_pickup`),
   INDEX `is_return_description` (`is_return_description`),
   INDEX `is_epid` (`is_epid`),
   INDEX `is_ktype` (`is_ktype`)
@@ -818,7 +712,7 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_template_category_specif
   `attribute_title` VARCHAR(255) NOT NULL,
   `value_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `value_ebay_recommended` LONGTEXT DEFAULT NULL,
-  `value_custom_value` VARCHAR(255) DEFAULT NULL,
+  `value_custom_value` TEXT DEFAULT NULL,
   `value_custom_attribute` VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   INDEX `template_category_id` (`template_category_id`)
@@ -970,7 +864,6 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_template_selling_format'
   `tax_category_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `tax_category_value` VARCHAR(255) NOT NULL,
   `tax_category_attribute` VARCHAR(255) NOT NULL,
-  `price_increase_vat_percent` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `price_variation_mode` TINYINT(2) UNSIGNED NOT NULL,
   `fixed_price_mode` TINYINT(2) UNSIGNED NOT NULL,
   `fixed_price_coefficient` VARCHAR(255) NOT NULL,
@@ -1029,7 +922,6 @@ CREATE TABLE `{$this->_installer->getTable('m2epro_ebay_template_shipping')}` (
   `local_shipping_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `local_shipping_discount_promotional_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `local_shipping_discount_combined_profile_id` TEXT DEFAULT NULL,
-  `cash_on_delivery_cost` VARCHAR(255) DEFAULT NULL,
   `international_shipping_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `international_shipping_discount_promotional_mode` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   `international_shipping_discount_combined_profile_id` TEXT DEFAULT NULL,
@@ -1154,6 +1046,7 @@ INSERT INTO `{$this->_installer->getTable('m2epro_config')}` (`group`,`key`,`val
   ('/ebay/order/settings/marketplace_8/', 'use_first_street_line_as_company', '1', NOW(), NOW()),
   ('/ebay/configuration/', 'prevent_item_duplicates_mode', '1', NOW(), NOW()),
   ('/ebay/configuration/', 'variation_mpn_can_be_changed', '0', NOW(), NOW()),
+  ('/ebay/configuration/', 'ignore_variation_mpn_in_resolver', '0', NOW(), NOW()),
   ('/ebay/configuration/', 'motors_epids_attribute', NULL, NOW(), NOW()),
   ('/ebay/configuration/', 'uk_epids_attribute', NULL, NOW(), NOW()),
   ('/ebay/configuration/', 'de_epids_attribute', NULL, NOW(), NOW()),
@@ -1189,28 +1082,28 @@ INSERT INTO `{$this->_installer->getTable('m2epro_marketplace')}` VALUES
   (22, 216, 'Singapore', 'Singapore', 'ebay.com.sg', 0, 20, 'Asia / Pacific', 'ebay', NOW(), NOW());
 
 INSERT INTO `{$this->_installer->getTable('m2epro_ebay_marketplace')}` VALUES
-    (1, 'USD', 'us', 'en_US', 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0),
-    (2, 'CAD', 'ca', 'en_CA', 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0),
-    (3, 'GBP', 'gb', 'en_GB', 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1),
-    (4, 'AUD', 'au', 'en_AU', 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1),
-    (5, 'EUR', 'at', 'de_AT', 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0),
-    (6, 'EUR', 'be', 'nl_BE', 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-    (7, 'EUR', 'fr', 'fr_FR', 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1),
-    (8, 'EUR', 'de', 'de_DE', 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1),
-    (9, 'USD', 'us', 'en_US', 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0),
-    (10, 'EUR', 'it', 'it_IT', 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1),
-    (11, 'EUR', 'be', 'fr_BE', 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-    (12, 'EUR', 'nl', 'nl_NL', 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-    (13, 'EUR', 'es', 'es_ES', 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1),
-    (14, 'CHF', 'ch', 'fr_CH', 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-    (15, 'HKD', 'hk', 'zh_HK', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-    (16, 'INR', 'in', 'hi_IN', 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-    (17, 'EUR', 'ie', 'en_IE', 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-    (18, 'MYR', 'my', 'ms_MY', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-    (19, 'CAD', 'ca', 'fr_CA', 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-    (20, 'PHP', 'ph', 'fil_PH', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-    (21, 'PLN', 'pl', 'pl_PL', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-    (22, 'SGD', 'sg', 'zh_SG', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0);
+    (1, 'USD', 'us', 'en_US', 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0),
+    (2, 'CAD', 'ca', 'en_CA', 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0),
+    (3, 'GBP', 'gb', 'en_GB', 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1),
+    (4, 'AUD', 'au', 'en_AU', 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1),
+    (5, 'EUR', 'at', 'de_AT', 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0),
+    (6, 'EUR', 'be', 'nl_BE', 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+    (7, 'EUR', 'fr', 'fr_FR', 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1),
+    (8, 'EUR', 'de', 'de_DE', 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1),
+    (9, 'USD', 'us', 'en_US', 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0),
+    (10, 'EUR', 'it', 'it_IT', 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1),
+    (11, 'EUR', 'be', 'fr_BE', 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+    (12, 'EUR', 'nl', 'nl_NL', 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+    (13, 'EUR', 'es', 'es_ES', 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1),
+    (14, 'CHF', 'ch', 'fr_CH', 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+    (15, 'HKD', 'hk', 'zh_HK', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+    (16, 'INR', 'in', 'hi_IN', 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+    (17, 'EUR', 'ie', 'en_IE', 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+    (18, 'MYR', 'my', 'ms_MY', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+    (19, 'CAD', 'ca', 'fr_CA', 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0),
+    (20, 'PHP', 'ph', 'fil_PH', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+    (21, 'PLN', 'pl', 'pl_PL', 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+    (22, 'SGD', 'sg', 'zh_SG', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0);
 
 SQL
         );
