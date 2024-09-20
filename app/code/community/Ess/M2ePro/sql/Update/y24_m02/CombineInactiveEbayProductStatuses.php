@@ -8,11 +8,7 @@ class Ess_M2ePro_Sql_Update_y24_m02_CombineInactiveEbayProductStatuses
      */
     public function execute()
     {
-        $oldStatuses = array(
-            Ess_M2ePro_Model_Listing_Product::STATUS_SOLD,
-            Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED,
-            Ess_M2ePro_Model_Listing_Product::STATUS_FINISHED
-        );
+        $oldStatuses = array(1, 3, 4);
         $tables = array('listing_product', 'listing_other', 'ebay_listing_product_variation');
 
         foreach ($tables as $table) {
